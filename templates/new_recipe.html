@@ -1,0 +1,182 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="recipe-detail-container">
+    <h1>Neues Rezept anlegen</h1>
+    <form id="new-recipe-form" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="name" class="form-label">Name des Gerichts</label>
+            <input type="text" name="name" id="name" class="form-control" required>
+        </div>
+        <div class="row">
+            {% for photo in photos %}
+            <div class="col-md-4">
+                <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" class="img-fluid" alt="Foto zum Rezept">
+                <!-- Hier könntest du einen Lösch-Button für jedes Foto einfügen -->
+            </div>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            <label for="photos" class="form-label">Fotos hochladen</label>
+            <input type="file" name="photos" id="photos" class="form-control" multiple>
+        </div>
+        <div class="mb-3">
+            <label for="category" class="form-label">Kategorie</label>
+            <select name="category" id="category" class="form-control" required>
+                {% for category in categories %}
+                <option value="{{ category }}" {% if recipe and recipe.category == category %}selected{% endif %}>
+                    {{ category }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="in_menu" class="form-label">In der Speisekarte</label>
+            <input type="checkbox" name="in_menu" id="in_menu" class="form-check-input">
+        </div>
+        <div class="mb-3">
+            <label for="menu_description" class="form-label">Speisekarten Beschreibung</label>
+            <input type="text" name="menu_description" id="menu_description" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="allergens" class="form-label">Allergene</label>
+            <input type="text" name="allergens" id="allergens" class="form-control" placeholder="z.B. Gluten, Laktose, Nüsse">
+        </div>
+        <div class="mb-3">
+            <label for="approximate_cost" class="form-label">C.a. Einkaufspreis (€)</label>
+            <input type="number" name="approximate_cost" id="approximate_cost" step="0.01" class="form-control" placeholder="z.B. 12.50">
+        </div>
+        <div class="mb-3">
+            <label for="selling_price" class="form-label">Verkaufspreis (€)</label>
+            <input type="number" name="selling_price" id="selling_price" step="0.01" class="form-control" placeholder="z.B. 15.00">
+        </div>
+        <input type="hidden" name="created_by" value="{{ recipe.created_by if recipe else current_user.username }}">
+        <input type="hidden" name="created_time" value="{{ recipe.created_time if recipe else '' }}">
+        <input type="hidden" name="edited_by" value="{{ current_user.username }}">
+        <input type="hidden" name="edited_time" value="{{ recipe.edited_time if recipe else '' }}">
+        <div class="mb-3">
+            <label for="instructions" class="form-label">Zubereitungsschritte</label>
+            <input type="hidden" name="instructions" id="hidden-instructions">
+            <div id="editor-container" style="height: 300px;"></div>
+        </div>
+        <div class="mb-3">
+            <label for="notes" class="form-label">Notizen/Anrichtehinweise</label>
+            <textarea name="notes" id="notes" class="form-control" rows="3"></textarea>
+        </div>
+
+        <h2>Zutaten (für 1 Portion)</h2>
+        <div id="ingredients-wrapper">
+            <!-- Erstes Feldset -->
+            <div class="row g-2 ingredient-set">
+                <div class="col">
+                    <input type="number" step="0.01" name="quantity_1" placeholder="Menge" class="form-control quantity-input">
+                </div>
+                <div class="col">
+                    <select name="unit_1" class="form-control unit-dropdown">
+                        <option value="g">g</option>
+                        <option value="ml">ml</option>
+                        <option value="Stück">Stück</option>
+                        <option value="nach Geschmack">nach Geschmack</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <input type="text" name="ingredient_name_1" placeholder="Zutat" class="form-control">
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-secondary mt-3" id="add-ingredient-btn">Weitere Zutat hinzufügen</button>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success">Speichern</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    console.log("JavaScript läuft!");
+
+    // Event-Handler für die Dropdown-Auswahl
+    $('#ingredients-wrapper').on('blur', '.unit-dropdown', function () {
+        const unit = $(this).val();
+        const quantityInput = $(this).closest('.ingredient-set').find('.quantity-input');
+
+        if (unit === 'nach Geschmack') {
+            quantityInput.val(0);
+        }
+    });
+
+    // Event-Handler für die Mengenänderung
+    $('#ingredients-wrapper').on('blur', '.quantity-input', function () {
+        const quantity = parseFloat($(this).val());
+        const unitDropdown = $(this).closest('.ingredient-set').find('.unit-dropdown');
+
+        if (quantity === 0) {
+            unitDropdown.val('nach Geschmack');
+        }
+    });
+    // Quill-Editor initialisieren
+    var quill = new Quill('#editor-container', {
+        theme: 'snow',
+        placeholder: 'Zubereitung eingeben...',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                ['link']
+            ]
+        }
+    });
+    console.log("Quill geladen!");
+
+    // Formular für "Neues Rezept anlegen" auswählen
+    var form = document.querySelector('#new-recipe-form');
+    if (form) {
+        console.log("Formular gefunden:", form);
+
+        form.addEventListener('submit', function (event) {
+            // Debugging: Submit verhindern, bis Quill übertragen ist
+            event.preventDefault();
+            console.log("Submit wurde ausgelöst!");
+
+            // Quill-Inhalt in das versteckte Feld übertragen
+            var instructionsField = document.querySelector('#hidden-instructions');
+            instructionsField.value = quill.root.innerHTML;
+
+            console.log("Übertragener Quill-Inhalt:", instructionsField.value);
+
+            // Formular absenden
+            form.submit();
+        });
+    } else {
+        console.error("Formular wurde nicht gefunden!");
+    }
+});
+let ingredientCount = 1;
+$('#add-ingredient-btn').click(function() {
+    ingredientCount++;
+    let html = `
+    <div class="row g-2 ingredient-set mt-2">
+        <div class="col">
+            <input type="number" step="0.01" name="quantity_${ingredientCount}" placeholder="Menge" class="form-control quantity-input">
+        </div>
+        <div class="col">
+            <select name="unit_${ingredientCount}" class="form-control unit-dropdown">
+                <option value="g">g</option>
+                <option value="ml">ml</option>
+                <option value="Stück">Stück</option>
+                <option value="nach Geschmack">nach Geschmack</option>
+            </select>
+        </div>
+        <div class="col">
+            <input type="text" name="ingredient_name_${ingredientCount}" placeholder="Zutat" class="form-control">
+        </div>
+    </div>`;
+    $('#ingredients-wrapper').append(html);
+    // Fokus auf das neue "Menge"-Feld setzen
+    $(`input[name="quantity_${ingredientCount}"]`).focus();
+});
+</script>
+{% endblock %}
+
