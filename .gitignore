@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+
+# Runtime and local configuration
+.env
+instance/
+.data/
+uploads/
+menu_card/
+*.log
+*.pid
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store

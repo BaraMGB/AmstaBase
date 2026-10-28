@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Speisekarte</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='menu.css') }}">
+</head>
+<body>
+<div class="container py-5">
+    <h1>Speisekarte</h1>
+    {% for category, recipes in categorized_recipes.items() %}
+    <section class="category">
+        <h2>{{ category }}</h2>
+        <div class="table-responsive"><table class="table"><tbody>
+        {% for recipe in recipes %}
+            <tr class="menu-item">
+                <td class="menu-photo">{% if recipe.photo %}<img src="{{ url_for('recipes.uploaded_file', filename=recipe.photo) }}" alt="{{ recipe.name }}">{% endif %}</td>
+                <td><strong>{{ recipe.name }}</strong><span>{{ recipe.menu_description }}</span></td>
+                <td class="menu-price">{{ "%.2f"|format(recipe.selling_price) }} €</td>
+            </tr>
+        {% endfor %}
+        </tbody></table></div>
+    </section>
+    {% else %}<p class="text-center">Derzeit sind keine Gerichte veröffentlicht.</p>{% endfor %}
+</div>
+</body>
+</html>

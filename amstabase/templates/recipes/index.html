@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% set title = "Rezepte – AmstaBase" %}
+{% block content %}
+<form method="get" action="{{ url_for('recipes.index') }}" class="mb-4">
+    <div class="input-group">
+        <input type="search" name="search" class="form-control" placeholder="Name oder Kategorie …" value="{{ search }}">
+        <button class="btn btn-primary">Suchen</button>
+    </div>
+</form>
+
+{% if has_permission("add") %}
+<div class="mb-4">
+    <a href="{{ url_for('recipes.new_recipe') }}" class="btn btn-primary me-2">Neues Rezept</a>
+    <a href="{{ url_for('menu.generate_pdf') }}" class="btn btn-secondary">PDF generieren</a>
+</div>
+{% endif %}
+
+{% if recipes %}
+<div class="row">
+    {% for recipe in recipes %}
+    <div class="col-md-4">
+        <a href="{{ url_for('recipes.show_recipe', recipe_id=recipe.id) }}" class="recipe-card-link">
+            <div class="card mb-4">
+                {% if recipe.photo %}<img src="{{ url_for('recipes.uploaded_file', filename=recipe.photo) }}" class="card-img-top" alt="{{ recipe.name }}">{% endif %}
+                <div class="card-body"><h2 class="h5 card-title">{{ recipe.name }}</h2><p class="card-text">{{ recipe.category }}</p></div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">Keine Rezepte gefunden.</p>
+{% endif %}
+{% endblock %}

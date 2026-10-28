@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% set title = recipe.name ~ " – AmstaBase" %}
+{% block content %}
+<article class="recipe-detail-container">
+    <h1 class="recipe-title mb-3">{{ recipe.name }}</h1>
+    <div class="recipe-content">
+        <div class="recipe-info">
+            <p><strong>Kategorie:</strong> {{ recipe.category }}</p>
+            <p><strong>In der Speisekarte:</strong> {{ "Ja" if recipe.in_menu else "Nein" }}</p>
+            <p><strong>Speisekartenbeschreibung:</strong> {{ recipe.menu_description or "–" }}</p>
+            <p><strong>Allergene:</strong> {{ recipe.allergens or "Keine Angabe" }}</p>
+            <p><strong>Ca. Einkaufspreis:</strong> {{ "%.2f"|format(recipe.approximate_cost) }} €</p>
+            <p><strong>Verkaufspreis:</strong> {{ "%.2f"|format(recipe.selling_price) }} €</p>
+            <p><strong>Anmerkungen:</strong> {{ recipe.notes or "–" }}</p>
+        </div>
+        {% if photos %}
+        <div id="photoCarousel" class="carousel slide">
+            <div class="carousel-inner">{% for photo in photos %}<div class="carousel-item {% if loop.first %}active{% endif %}"><img src="{{ url_for('recipes.uploaded_file', filename=photo.filename) }}" class="d-block w-100 carousel-img" alt="{{ recipe.name }}"></div>{% endfor %}</div>
+            {% if photos|length > 1 %}<button class="carousel-control-prev" type="button" data-bs-target="#photoCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span><span class="visually-hidden">Vorheriges Bild</span></button><button class="carousel-control-next" type="button" data-bs-target="#photoCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span><span class="visually-hidden">Nächstes Bild</span></button>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <h2>Zutaten</h2>
+    <div class="mb-3"><label for="portions">Portionen:</label> <input type="number" id="portions" value="1" min="0.1" step="0.1" class="form-control d-inline-block" style="width:100px"></div>
+    <table class="table table-bordered" id="ingredients-table"><thead><tr><th>Menge</th><th>Einheit</th><th>Zutat</th></tr></thead><tbody>
+    {% for ingredient in ingredients %}<tr><td class="quantity-cell" data-base="{{ ingredient.quantity or 0 }}">{{ ingredient.quantity }}</td><td>{{ ingredient.unit }}</td><td>{% if ingredient.linked_recipe_id %}<a href="{{ url_for('recipes.show_recipe', recipe_id=ingredient.linked_recipe_id) }}">{{ ingredient.name }}</a>{% else %}{{ ingredient.name }}{% endif %}</td></tr>{% endfor %}
+    </tbody></table>
+
+    <h2>Zubereitung</h2><div class="instructions">{{ recipe.instructions|safe }}</div>
+    {% if current_user.role == "Admin" %}<div class="recipe-info mt-4"><p><strong>Erstellt:</strong> {{ recipe.created_by }} · {{ recipe.created_time }}</p><p><strong>Bearbeitet:</strong> {{ recipe.edited_by or "–" }} · {{ recipe.edited_time or "–" }}</p></div>{% endif %}
+    {% if has_permission("edit") %}<div class="mt-4"><a href="{{ url_for('recipes.edit_recipe', recipe_id=recipe.id) }}" class="btn btn-warning btn-sm me-2">Bearbeiten</a><form action="{{ url_for('recipes.delete_recipe', recipe_id=recipe.id) }}" method="post" class="d-inline"><button class="btn btn-danger btn-sm" onclick="return confirm('Rezept wirklich löschen?')">Löschen</button></form></div>{% endif %}
+</article>
+{% endblock %}
+{% block scripts %}<script>document.getElementById('portions')?.addEventListener('input', function () { const factor = Number.parseFloat(this.value) || 1; document.querySelectorAll('.quantity-cell').forEach((cell) => { const base = Number.parseFloat(cell.dataset.base) || 0; cell.textContent = (base * factor).toLocaleString('de-DE', {maximumFractionDigits: 2}); }); });</script>{% endblock %}

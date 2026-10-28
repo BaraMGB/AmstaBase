@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% set title = "Administration – AmstaBase" %}
+{% block content %}
+<div class="recipe-detail-container">
+    <h1>Administration</h1>
+    <h2>Benutzerverwaltung</h2>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>ID</th><th>Benutzername</th><th>Rolle</th><th>Aktionen</th></tr></thead>
+            <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td><td>{{ user.username }}</td><td>{{ user.role }}</td>
+                    <td>
+                        <form action="{{ url_for('admin.edit_user_role', user_id=user.id) }}" method="post" class="d-inline-flex gap-2">
+                            <select name="role" class="form-select form-select-sm" {% if user.id == current_user.id %}disabled{% endif %}>
+                                {% for role in roles %}<option value="{{ role }}" {% if user.role == role %}selected{% endif %}>{{ role }}</option>{% endfor %}
+                            </select>
+                            {% if user.id != current_user.id %}<button class="btn btn-warning btn-sm">Ändern</button>{% endif %}
+                        </form>
+                        {% if user.id != current_user.id %}
+                            <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="post" class="d-inline">
+                                <button class="btn btn-danger btn-sm" onclick="return confirm('Benutzer wirklich löschen?')">Löschen</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h2>Kategorien</h2>
+    <form method="post" class="mb-5">
+        <label for="categories" class="form-label">Kommagetrennte Kategorien</label>
+        <textarea name="categories" id="categories" class="form-control" rows="3">{{ categories_string }}</textarea>
+        <button class="btn btn-success mt-3">Kategorien speichern</button>
+    </form>
+
+    <h2>Registrierung</h2>
+    <p>Aktueller Status: <strong>{{ "aktiv" if registration_enabled else "deaktiviert" }}</strong></p>
+    <form action="{{ url_for('admin.toggle_registration') }}" method="post">
+        <button class="btn btn-primary">Registrierung {{ "deaktivieren" if registration_enabled else "aktivieren" }}</button>
+    </form>
+</div>
+{% endblock %}

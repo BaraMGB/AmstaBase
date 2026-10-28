@@ -287,3 +287,18 @@ a:hover {
     border-radius: 0 8px 8px 0;
 }
 
+#editor-container {
+    min-height: 260px;
+    background: #fff;
+}
+
+.handle {
+    cursor: grab;
+    display: flex;
+    align-items: center;
+}
+
+.instructions {
+    overflow-wrap: anywhere;
+}
+

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% set title = recipe.name ~ " – AmstaBase" %}
+{% block content %}
+<article class="recipe-detail-container">
+    <h1 class="recipe-title mb-3">{{ recipe.name }}</h1>
+    <div class="recipe-content">
+        <div class="recipe-info"><p><strong>Kategorie:</strong> {{ recipe.category }}</p><p><strong>Beschreibung:</strong> {{ recipe.menu_description or "–" }}</p><p><strong>Preis:</strong> {{ "%.2f"|format(recipe.selling_price) }} €</p><p><strong>Allergene:</strong> {{ recipe.allergens or "Keine Angabe" }}</p><p><strong>Anmerkungen:</strong> {{ recipe.notes or "–" }}</p></div>
+        {% if photos %}<div id="photoCarousel" class="carousel slide"><div class="carousel-inner">{% for photo in photos %}<div class="carousel-item {% if loop.first %}active{% endif %}"><img src="{{ url_for('recipes.uploaded_file', filename=photo.filename) }}" class="d-block w-100 carousel-img" alt="{{ recipe.name }}"></div>{% endfor %}</div></div>{% endif %}
+    </div>
+    <h2>Zutaten</h2><table class="table table-bordered"><tbody>{% for ingredient in ingredients %}<tr><td>{{ ingredient.ingredient_name }}</td></tr>{% endfor %}</tbody></table>
+</article>
+{% endblock %}

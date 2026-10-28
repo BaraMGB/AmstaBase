@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% set title = "Registrierung – AmstaBase" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="h3 mb-4">Registrieren</h1>
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Benutzername</label>
+                        <input id="username" name="username" class="form-control" required autofocus>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Passwort</label>
+                        <input id="password" name="password" type="password" minlength="8" class="form-control" required>
+                        <div class="form-text">Mindestens 8 Zeichen.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Account anlegen</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
