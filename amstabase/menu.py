@@ -1,15 +1,10 @@
-"""Public menu and PDF export routes."""
+"""Public menu routes."""
 
 from __future__ import annotations
 
-from pathlib import Path
-
-from flask import Blueprint, current_app, render_template, send_file
-from weasyprint import HTML
+from flask import Blueprint, render_template
 
 from .db import get_categories, get_db
-from .permissions import permission_required
-from .services import split_large_categories
 
 bp = Blueprint("menu", __name__)
 
@@ -38,19 +33,3 @@ def get_categorized_menu() -> dict[str, list]:
 @bp.get("/menu")
 def public_menu():
     return render_template("menu/public.html", categorized_recipes=get_categorized_menu())
-
-
-@bp.get("/generate_pdf")
-@permission_required("edit")
-def generate_pdf():
-    categorized = split_large_categories(get_categorized_menu())
-    rendered_html = render_template("menu/pdf.html", categorized_recipes=categorized)
-    pdf_path = Path(current_app.config["MENU_PDF_PATH"])
-    pdf_path.parent.mkdir(parents=True, exist_ok=True)
-    HTML(string=rendered_html, base_url=current_app.root_path).write_pdf(pdf_path)
-    return send_file(
-        pdf_path,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name="speisekarte.pdf",
-    )

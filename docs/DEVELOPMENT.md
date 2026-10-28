@@ -31,7 +31,6 @@ app = create_app({"TESTING": True, "DATABASE": "/tmp/amstabase-test.sqlite"})
 | GET/POST | `/edit_recipe/<id>` | Admin/Editor | Rezept bearbeiten |
 | POST | `/delete_recipe/<id>` | Admin/Editor | Rezept löschen |
 | GET | `/menu` | öffentlich | veröffentlichte Speisekarte |
-| GET | `/generate_pdf` | Admin/Editor | Speisekarte als PDF |
 | GET/POST | `/admin/` | Admin | Administration |
 
 ## Testaufbau
@@ -43,7 +42,7 @@ Testgruppen:
 - `test_auth.py`: Registrierung, Rollenvergabe, Login, persistenter Registrierungsschalter
 - `test_permissions.py`: anonyme Zugriffe und Rollenmatrix
 - `test_recipes.py`: Erstellen, HTML-Bereinigung, Bearbeiten, Löschen und Uploads
-- `test_menu.py`: öffentliche Menüfilterung und PDF-Autorisierung
+- `test_menu.py`: Filterung der öffentlichen Speisekarte
 - `test_services.py`: isolierte Geschäftslogik
 
 Ausführung:

@@ -21,8 +21,6 @@ Gemeinsam zu sichern sind:
 2. das Verzeichnis aus `UPLOAD_FOLDER`,
 3. die produktive `.env` beziehungsweise das Secret-Management.
 
-Die generierte PDF-Datei ist reproduzierbar und muss nicht gesichert werden.
-
 ## Konsistentes Backup
 
 SQLite nicht durch blindes Kopieren während Schreibzugriffen sichern. Empfohlen:
@@ -52,8 +50,7 @@ flask --app app init-db
 - Anwendungslogs werden über das Python-Logging auf Standardausgabe geschrieben.
 - Fehlgeschlagene Logins erscheinen als Warnung, erfolgreiche als Information.
 - Der Start warnt bei Verwendung des unsicheren Entwicklungs-`SECRET_KEY`.
-- Schreibrechte für Datenbank-, Upload- und PDF-Verzeichnis prüfen.
-- Bei PDF-Problemen zuerst die nativen WeasyPrint-Abhängigkeiten und Fontpfade prüfen.
+- Schreibrechte für Datenbank- und Upload-Verzeichnis prüfen.
 
 ## Datenschutz und Aufbewahrung
 

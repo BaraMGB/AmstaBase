@@ -10,8 +10,8 @@ Browser
   ▼
 Flask Blueprints ──► Services / Berechtigungen
   │                         │
-  ├── Jinja2 Templates      ├── bcrypt / bleach
-  ├── Upload-Dateisystem    └── WeasyPrint
+  ├── Jinja2 Templates      └── bcrypt / bleach
+  ├── Upload-Dateisystem
   ▼
 SQLite
 ```
@@ -21,10 +21,10 @@ SQLite
 - `auth.py`: Benutzer laden, Passwort-Hashing, Registrierung, Login und Logout.
 - `admin.py`: Rollenverwaltung, Kategorien und Registrierungsschalter.
 - `recipes.py`: Suche, Detailansichten, Erstellen, Bearbeiten, Löschen und Fotoverwaltung.
-- `menu.py`: öffentliche Menüprojektion und PDF-Erzeugung.
+- `menu.py`: öffentliche, nach Kategorien geordnete Speisekarte.
 - `db.py`: eine SQLite-Verbindung pro Flask-Kontext, Schemaaufbau, Einstellungen.
 - `permissions.py`: zentrale Rollenmatrix und Decorators für Autorisierung.
-- `services.py`: Formularparser, HTML-Bereinigung, Dateitypprüfung und PDF-Seitenaufteilung.
+- `services.py`: Formularparser, HTML-Bereinigung und Dateitypprüfung.
 - `extensions.py`: gemeinsam genutzte Flask-Erweiterungen ohne Bindung an eine konkrete App.
 
 Blueprints kapseln die Fachbereiche. Externe URL-Pfade bleiben bewusst einfach (`/`, `/login`, `/recipe/<id>`, `/menu`), während interne Endpoints eindeutig benannt sind, zum Beispiel `recipes.show_recipe`.
@@ -77,10 +77,6 @@ Ein Key-Value-Speicher für veränderliche Anwendungseinstellungen. Aktuell verw
 - `SECRET_KEY` muss in Produktion zufällig gesetzt werden.
 
 Die Anwendung besitzt derzeit keinen expliziten CSRF-Token-Mechanismus. Bei einer Bereitstellung außerhalb eines kontrollierten internen Netzes sollte Flask-WTF/CSRF ergänzt werden.
-
-## PDF-Erzeugung
-
-`menu.generate_pdf` projiziert veröffentlichte Rezepte nach der konfigurierten Kategorienreihenfolge. Große Kategorien werden durch `split_large_categories` in Blöcke geteilt, wobei eine einzelne Position auf der letzten Seite vermieden wird. WeasyPrint rendert das Jinja-Template und der erzeugte Inhalt wird als Download ausgeliefert.
 
 ## Persistenz und Transaktionen
 

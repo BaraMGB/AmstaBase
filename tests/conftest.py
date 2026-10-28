@@ -17,7 +17,6 @@ def app(tmp_path: Path):
             "SECRET_KEY": "test-secret",
             "DATABASE": str(tmp_path / "test.sqlite"),
             "UPLOAD_FOLDER": str(tmp_path / "uploads"),
-            "MENU_PDF_PATH": str(tmp_path / "generated" / "menu.pdf"),
         }
     )
     yield application

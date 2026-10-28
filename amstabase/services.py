@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from typing import Any
 
 import bleach
@@ -71,27 +71,3 @@ def extract_ingredients(form: Mapping[str, Any]) -> list[dict[str, Any]]:
             }
         )
     return ingredients
-
-
-def split_large_categories(
-    categorized_recipes: Mapping[str, Sequence[Any]], max_items_per_page: int = 5
-) -> dict[str, list[list[Any]]]:
-    """Split menu categories while avoiding a one-item final page."""
-
-    if max_items_per_page < 2:
-        raise ValueError("max_items_per_page must be at least 2")
-
-    result: dict[str, list[list[Any]]] = {}
-    for category, recipes in categorized_recipes.items():
-        items = list(recipes)
-        chunks: list[list[Any]] = []
-        current_index = 0
-        while current_index < len(items):
-            remaining = len(items) - current_index
-            chunk_size = min(max_items_per_page, remaining)
-            if remaining > max_items_per_page and remaining - chunk_size == 1:
-                chunk_size -= 1
-            chunks.append(items[current_index : current_index + chunk_size])
-            current_index += chunk_size
-        result[category] = chunks or [[]]
-    return result

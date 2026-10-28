@@ -1,11 +1,8 @@
-import pytest
-
 from amstabase.services import (
     allowed_image,
     extract_ingredients,
     optional_float,
     sanitize_instructions,
-    split_large_categories,
 )
 
 
@@ -41,13 +38,3 @@ def test_sanitize_instructions_removes_dangerous_markup():
     assert "<p>Text</p>" in result
     assert "<script" not in result
     assert "javascript:" not in result
-
-
-def test_split_large_categories_avoids_single_last_item():
-    result = split_large_categories({"Dessert": list(range(6))})
-    assert [len(chunk) for chunk in result["Dessert"]] == [4, 2]
-
-
-def test_split_large_categories_rejects_invalid_page_size():
-    with pytest.raises(ValueError):
-        split_large_categories({"A": [1]}, max_items_per_page=1)

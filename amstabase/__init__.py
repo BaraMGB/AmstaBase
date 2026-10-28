@@ -25,16 +25,12 @@ def create_app(test_config: dict | None = None) -> Flask:
     app.config.from_mapping(
         DATABASE=os.getenv("DATABASE_PATH", str(Path(app.instance_path) / "amstabase.sqlite")),
         UPLOAD_FOLDER=os.getenv("UPLOAD_FOLDER", str(Path(app.instance_path) / "uploads")),
-        MENU_PDF_PATH=os.getenv(
-            "MENU_PDF_PATH", str(Path(app.instance_path) / "generated" / "speisekarte.pdf")
-        ),
     )
     if test_config:
         app.config.update(test_config)
 
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
     Path(app.config["UPLOAD_FOLDER"]).mkdir(parents=True, exist_ok=True)
-    Path(app.config["MENU_PDF_PATH"]).parent.mkdir(parents=True, exist_ok=True)
 
     logging.basicConfig(
         level=logging.INFO,

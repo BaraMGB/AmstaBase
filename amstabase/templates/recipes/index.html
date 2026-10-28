@@ -10,8 +10,7 @@
 
 {% if has_permission("add") %}
 <div class="mb-4">
-    <a href="{{ url_for('recipes.new_recipe') }}" class="btn btn-primary me-2">Neues Rezept</a>
-    <a href="{{ url_for('menu.generate_pdf') }}" class="btn btn-secondary">PDF generieren</a>
+    <a href="{{ url_for('recipes.new_recipe') }}" class="btn btn-primary">Neues Rezept</a>
 </div>
 {% endif %}
 

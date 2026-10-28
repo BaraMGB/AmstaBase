@@ -1,20 +1,19 @@
 # AmstaBase
 
-AmstaBase ist eine Flask-Anwendung zur internen Verwaltung von Rezepten, Zutaten, Fotos, Rollen und einer öffentlichen Speisekarte. Speisekarten können zusätzlich als PDF exportiert werden.
+AmstaBase ist eine Flask-Anwendung zur internen Verwaltung von Rezepten, Zutaten, Fotos, Rollen und einer öffentlichen Speisekarte.
 
 ## Funktionen
 
 - Rezeptverwaltung mit Zutaten, Rich-Text-Zubereitung und mehreren Fotos
 - Rollenbasierte Rechte für Admin, Editor, Viewer und Service
 - Öffentliche, nach Kategorien sortierte Speisekarte
-- PDF-Export über WeasyPrint
 - Persistente Einstellungen für Kategorien und Registrierung
 - SQLite-Datenbank mit automatischer, nicht destruktiver Initialisierung
 - Automatisierte Tests für Authentifizierung, Rechte, CRUD, Menü und Hilfsfunktionen
 
 ## Schnellstart
 
-Voraussetzungen: Python 3.10 oder neuer. WeasyPrint kann je nach Betriebssystem zusätzliche native Bibliotheken benötigen.
+Voraussetzung ist Python 3.10 oder neuer.
 
 ```bash
 python3 -m venv .venv
@@ -39,7 +38,6 @@ flask --app app init-db
 | `SECRET_KEY` | `dev-change-me` | Signiert Sessions; in Produktion zwingend ersetzen |
 | `DATABASE_PATH` | `instance/amstabase.sqlite` | Pfad zur SQLite-Datenbank |
 | `UPLOAD_FOLDER` | `instance/uploads` | Ablage hochgeladener Rezeptfotos |
-| `MENU_PDF_PATH` | `instance/generated/speisekarte.pdf` | Ziel des PDF-Exports |
 | `SESSION_LIFETIME_MINUTES` | `30` | Gültigkeitsdauer einer Sitzung |
 | `MAX_CONTENT_LENGTH` | `16777216` | Maximale Request-/Uploadgröße in Bytes |
 
@@ -51,13 +49,13 @@ amstabase/
 ├── auth.py              # Registrierung und Login
 ├── admin.py             # Benutzer und Einstellungen
 ├── recipes.py           # Rezept-CRUD und Uploads
-├── menu.py              # Öffentliche Speisekarte und PDF
+├── menu.py              # Öffentliche Speisekarte
 ├── db.py                # SQLite-Lebenszyklus und Settings
 ├── permissions.py       # Rollen- und Rechteprüfung
 ├── services.py          # Wiederverwendbare Geschäftslogik
 ├── schema.sql           # Datenbankschema
 ├── templates/           # Nach Fachbereich gegliederte Templates
-└── static/              # Styles, JavaScript, Fonts und Icons
+└── static/              # Styles, JavaScript und Icons
 tests/                   # Pytest-Testpaket
 docs/                    # Technische Detaildokumentation
 app.py                   # Kompatibler WSGI-/Entwicklungs-Einstieg
