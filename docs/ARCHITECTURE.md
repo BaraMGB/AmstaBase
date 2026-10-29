@@ -10,8 +10,8 @@ Browser
   ▼
 Flask Blueprints ──► Services / Berechtigungen
   │                         │
-  ├── Jinja2 Templates      └── bcrypt / bleach
-  ├── Upload-Dateisystem
+  ├── Jinja2 Templates      ├── bcrypt / bleach
+  ├── Upload-Dateisystem    └── URL-Abruf / OpenAI-kompatibles LLM
   ▼
 SQLite
 ```
@@ -22,6 +22,7 @@ SQLite
 - `admin.py`: Rollenverwaltung, Kategorien und Registrierungsschalter.
 - `recipes.py`: Suche, Detailansichten, Erstellen, Bearbeiten, Löschen und Fotoverwaltung.
 - `menu.py`: öffentliche, nach Kategorien geordnete Speisekarte.
+- `llm.py`: sicherheitsbegrenzter URL-Abruf, LLM-Anfrage, JSON-Validierung und Normalisierung.
 - `db.py`: eine SQLite-Verbindung pro Flask-Kontext, Schemaaufbau, Einstellungen.
 - `permissions.py`: zentrale Rollenmatrix und Decorators für Autorisierung.
 - `services.py`: Formularparser, HTML-Bereinigung und Dateitypprüfung.
@@ -65,6 +66,8 @@ Ein Key-Value-Speicher für veränderliche Anwendungseinstellungen. Aktuell verw
 
 - `categories`: kommagetrennte, geordnete Kategorien
 - `registration_enabled`: `true` oder `false`
+- `llm_endpoint`: vollständige URL eines OpenAI-kompatiblen Chat-Completions-Endpunkts
+- `llm_model`: an den Endpunkt übergebener Modellname
 
 ## Sicherheit
 
@@ -73,10 +76,22 @@ Ein Key-Value-Speicher für veränderliche Anwendungseinstellungen. Aktuell verw
 - Rich-Text wird vor dem Speichern durch `bleach` auf erlaubte Tags und Attribute reduziert.
 - Uploadnamen werden nicht übernommen. Ein kryptografisch zufälliger Name verhindert Pfadmanipulationen und Kollisionen.
 - Uploadgröße und erlaubte Dateiendungen sind begrenzt.
+- Beim Rezeptimport sind URL-Schemata, Antworttyp, Weiterleitungen und Downloadgröße begrenzt; private und lokale Zieladressen werden blockiert.
+- Der LLM-API-Key wird nicht in SQLite gespeichert. Die Admin-Oberfläche schreibt ihn atomar in eine Datei mit Modus `0600`; alternativ dient die Laufzeitumgebung als Fallback.
+- Der gespeicherte Key wird nie an den Browser zurückgegeben oder protokolliert.
+- Alle schreibenden Browserformulare sind durch Flask-WTF gegen CSRF geschützt.
 - Session-Cookies sind `HttpOnly` und `SameSite=Lax`.
 - `SECRET_KEY` muss in Produktion zufällig gesetzt werden.
 
-Die Anwendung besitzt derzeit keinen expliziten CSRF-Token-Mechanismus. Bei einer Bereitstellung außerhalb eines kontrollierten internen Netzes sollte Flask-WTF/CSRF ergänzt werden.
+## LLM-Importfluss
+
+1. Admin oder Editor gibt genau eine öffentliche URL oder einen Textblock ein.
+2. URL-Inhalte werden serverseitig geladen, von Skripten und Styles bereinigt und größenbegrenzt.
+3. Der Text wird mit einem strikt beschriebenen JSON-Schema an den administrativ konfigurierten Chat-Completions-Endpunkt gesendet.
+4. Die Antwort wird als JSON validiert, auf bekannte Felder normalisiert und Rich-Text erneut mit `bleach` bereinigt.
+5. Das Ergebnis füllt das normale Rezeptformular vor. Erst die explizite Bestätigung durch den Benutzer schreibt Daten in SQLite.
+
+LLM-Ausgaben gelten grundsätzlich als nicht vertrauenswürdig. Insbesondere Mengen, Allergene und Zubereitung müssen vor dem Speichern geprüft werden.
 
 ## Persistenz und Transaktionen
 

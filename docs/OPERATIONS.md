@@ -8,6 +8,7 @@ Für den produktiven Betrieb nicht den Flask-Entwicklungsserver verwenden:
 source .venv/bin/activate
 pip install -e '.[production]'
 export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+export OPENAI_API_KEY="..."
 gunicorn --workers 2 --bind 0.0.0.0:8000 app:app
 ```
 
@@ -19,7 +20,8 @@ Gemeinsam zu sichern sind:
 
 1. die Datei aus `DATABASE_PATH`,
 2. das Verzeichnis aus `UPLOAD_FOLDER`,
-3. die produktive `.env` beziehungsweise das Secret-Management.
+3. falls verwendet die Datei aus `OPENAI_API_KEY_FILE`,
+4. die produktive `.env` beziehungsweise das Secret-Management.
 
 ## Konsistentes Backup
 
@@ -51,6 +53,9 @@ flask --app app init-db
 - Fehlgeschlagene Logins erscheinen als Warnung, erfolgreiche als Information.
 - Der Start warnt bei Verwendung des unsicheren Entwicklungs-`SECRET_KEY`.
 - Schreibrechte für Datenbank- und Upload-Verzeichnis prüfen.
+- Bei Importfehlern LLM-Endpunkt, Modell, Admin-Key beziehungsweise `OPENAI_API_KEY`, DNS und ausgehende HTTPS-Verbindungen prüfen.
+- Die Secret-Datei muss dem Dienstbenutzer gehören und darf höchstens Dateirechte `0600` besitzen.
+- Rezeptquellen und LLM-Anfragen können sensible Inhalte an externe Anbieter übertragen; Anbieter- und Datenschutzvorgaben beachten.
 
 ## Datenschutz und Aufbewahrung
 

@@ -51,3 +51,9 @@ VALUES ('categories', 'Vorspeisen,Suppen,Pasta,Hauptgerichte,Dessert,intern');
 
 INSERT OR IGNORE INTO settings (key, value)
 VALUES ('registration_enabled', 'true');
+
+INSERT OR IGNORE INTO settings (key, value)
+VALUES ('llm_endpoint', 'https://api.openai.com/v1/chat/completions');
+
+INSERT OR IGNORE INTO settings (key, value)
+VALUES ('llm_model', 'gpt-4o-mini');

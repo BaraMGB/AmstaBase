@@ -1,9 +1,19 @@
 """Administrative user and application settings routes."""
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
 from .db import get_db, get_setting, set_setting
+from .llm import (
+    DEFAULT_LLM_ENDPOINT,
+    DEFAULT_LLM_MODEL,
+    delete_openai_api_key,
+    get_openai_api_key,
+    is_http_url,
+    is_https_url,
+    openai_api_key_source,
+    save_openai_api_key,
+)
 from .permissions import ROLES, admin_required
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -29,7 +39,53 @@ def dashboard():
         roles=ROLES,
         categories_string=get_setting("categories", ""),
         registration_enabled=get_setting("registration_enabled", "true") == "true",
+        llm_endpoint=get_setting("llm_endpoint", DEFAULT_LLM_ENDPOINT),
+        llm_model=get_setting("llm_model", DEFAULT_LLM_MODEL),
+        llm_api_key_source=openai_api_key_source(),
     )
+
+
+@bp.post("/llm-settings")
+@admin_required
+def update_llm_settings():
+    endpoint = request.form.get("llm_endpoint", "").strip()
+    model = request.form.get("llm_model", "").strip()
+    if not is_http_url(endpoint):
+        flash("Der LLM-Endpunkt muss eine gültige HTTP- oder HTTPS-URL sein.", "danger")
+    elif get_openai_api_key() and not is_https_url(endpoint):
+        flash("Ein konfigurierter API-Key darf nur mit HTTPS verwendet werden.", "danger")
+    elif not model:
+        flash("Ein LLM-Modell ist erforderlich.", "danger")
+    else:
+        set_setting("llm_endpoint", endpoint)
+        set_setting("llm_model", model)
+        flash("LLM-Einstellungen wurden gespeichert.", "success")
+    return redirect(url_for("admin.dashboard"))
+
+
+@bp.post("/llm-api-key")
+@admin_required
+def update_llm_api_key():
+    action = request.form.get("action", "save")
+    if action == "delete":
+        delete_openai_api_key()
+        if current_app.config.get("OPENAI_API_KEY", "").strip():
+            flash("Admin-Key gelöscht; der Key aus der Umgebung ist wieder aktiv.", "success")
+        else:
+            flash("API-Key wurde gelöscht.", "success")
+    else:
+        endpoint = get_setting("llm_endpoint", DEFAULT_LLM_ENDPOINT) or DEFAULT_LLM_ENDPOINT
+        if not is_https_url(endpoint):
+            flash("Ein API-Key kann nur für einen HTTPS-Endpunkt gespeichert werden.", "danger")
+            return redirect(url_for("admin.dashboard"))
+        try:
+            save_openai_api_key(request.form.get("llm_api_key", ""))
+        except (OSError, ValueError) as error:
+            current_app.logger.warning("Could not store LLM API key: %s", error)
+            flash(str(error), "danger")
+        else:
+            flash("API-Key wurde sicher als Serverdatei gespeichert.", "success")
+    return redirect(url_for("admin.dashboard"))
 
 
 @bp.post("/users/<int:user_id>/role")

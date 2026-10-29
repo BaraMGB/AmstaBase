@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="row g-2 ingredient-set mb-2">
                 <div class="col-auto handle"><i class="bi bi-grip-vertical"></i></div>
                 <div class="col"><input type="number" step="0.01" name="quantity_${ingredientCount}" placeholder="Menge" class="form-control quantity-input"></div>
-                <div class="col"><select name="unit_${ingredientCount}" class="form-control unit-dropdown"><option>g</option><option>ml</option><option>Stück</option><option>nach Geschmack</option></select></div>
+                <div class="col"><input name="unit_${ingredientCount}" list="unit-options" class="form-control unit-dropdown" value="g" placeholder="Einheit"></div>
                 <div class="col"><input name="ingredient_name_${ingredientCount}" placeholder="Zutat" class="form-control"></div>
                 <div class="col-auto"><button type="button" class="btn btn-danger btn-sm remove-ingredient">×</button></div>
             </div>`);

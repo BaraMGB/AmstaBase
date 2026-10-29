@@ -29,7 +29,7 @@
 
     <h2>Zubereitung</h2><div class="instructions">{{ recipe.instructions|safe }}</div>
     {% if current_user.role == "Admin" %}<div class="recipe-info mt-4"><p><strong>Erstellt:</strong> {{ recipe.created_by }} · {{ recipe.created_time }}</p><p><strong>Bearbeitet:</strong> {{ recipe.edited_by or "–" }} · {{ recipe.edited_time or "–" }}</p></div>{% endif %}
-    {% if has_permission("edit") %}<div class="mt-4"><a href="{{ url_for('recipes.edit_recipe', recipe_id=recipe.id) }}" class="btn btn-warning btn-sm me-2">Bearbeiten</a><form action="{{ url_for('recipes.delete_recipe', recipe_id=recipe.id) }}" method="post" class="d-inline"><button class="btn btn-danger btn-sm" onclick="return confirm('Rezept wirklich löschen?')">Löschen</button></form></div>{% endif %}
+    {% if has_permission("edit") %}<div class="mt-4"><a href="{{ url_for('recipes.edit_recipe', recipe_id=recipe.id) }}" class="btn btn-warning btn-sm me-2">Bearbeiten</a><form action="{{ url_for('recipes.delete_recipe', recipe_id=recipe.id) }}" method="post" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-danger btn-sm" onclick="return confirm('Rezept wirklich löschen?')">Löschen</button></form></div>{% endif %}
 </article>
 {% endblock %}
 {% block scripts %}<script>document.getElementById('portions')?.addEventListener('input', function () { const factor = Number.parseFloat(this.value) || 1; document.querySelectorAll('.quantity-cell').forEach((cell) => { const base = Number.parseFloat(cell.dataset.base) || 0; cell.textContent = (base * factor).toLocaleString('de-DE', {maximumFractionDigits: 2}); }); });</script>{% endblock %}

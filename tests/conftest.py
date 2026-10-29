@@ -15,8 +15,10 @@ def app(tmp_path: Path):
         {
             "TESTING": True,
             "SECRET_KEY": "test-secret",
+            "WTF_CSRF_ENABLED": False,
             "DATABASE": str(tmp_path / "test.sqlite"),
             "UPLOAD_FOLDER": str(tmp_path / "uploads"),
+            "OPENAI_API_KEY_FILE": str(tmp_path / "secrets" / "openai_api_key"),
         }
     )
     yield application

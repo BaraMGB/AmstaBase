@@ -11,6 +11,10 @@ class Config:
 
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-change-me")
     MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH", 16 * 1024 * 1024))
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+    LLM_REQUEST_TIMEOUT_SECONDS = float(os.getenv("LLM_REQUEST_TIMEOUT_SECONDS", "30"))
+    RECIPE_SOURCE_MAX_CHARS = int(os.getenv("RECIPE_SOURCE_MAX_CHARS", "50000"))
+    RECIPE_URL_MAX_BYTES = int(os.getenv("RECIPE_URL_MAX_BYTES", "1000000"))
     PERMANENT_SESSION_LIFETIME = timedelta(
         minutes=int(os.getenv("SESSION_LIFETIME_MINUTES", "30"))
     )

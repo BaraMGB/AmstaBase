@@ -10,7 +10,8 @@
 
 {% if has_permission("add") %}
 <div class="mb-4">
-    <a href="{{ url_for('recipes.new_recipe') }}" class="btn btn-primary">Neues Rezept</a>
+    <a href="{{ url_for('recipes.import_recipe') }}" class="btn btn-primary me-2">Mit LLM importieren</a>
+    <a href="{{ url_for('recipes.new_recipe') }}" class="btn btn-secondary">Manuell erfassen</a>
 </div>
 {% endif %}
 

@@ -1,10 +1,13 @@
-{% set editing = recipe is not none %}
+{% set editing = form_mode == "edit" %}
+{% set has_values = recipe is not none %}
 <div class="recipe-detail-container">
-    <h1>{{ "Rezept bearbeiten: " ~ recipe.name if editing else "Neues Rezept anlegen" }}</h1>
-    <form id="recipe-form" method="post" enctype="multipart/form-data">
+    <h1>{% if editing %}Rezept bearbeiten: {{ recipe.name }}{% elif form_mode == "import" %}Importiertes Rezept prüfen{% else %}Neues Rezept anlegen{% endif %}</h1>
+    {% if form_mode == "import" %}<div class="alert alert-info">Die LLM-Ausgabe kann Fehler enthalten. Bitte Zutaten, Mengen, Allergene und Zubereitung vollständig prüfen.</div>{% endif %}
+    <form id="recipe-form" action="{{ url_for('recipes.edit_recipe', recipe_id=recipe.id) if editing else url_for('recipes.new_recipe') }}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3">
             <label for="name" class="form-label">Name des Gerichts</label>
-            <input name="name" id="name" class="form-control" value="{{ recipe.name if editing else '' }}" required>
+            <input name="name" id="name" class="form-control" value="{{ recipe.name if has_values else '' }}" required>
         </div>
 
         {% if photos %}
@@ -26,25 +29,25 @@
         <div class="mb-3">
             <label for="category" class="form-label">Kategorie</label>
             <select name="category" id="category" class="form-control" required>
-                {% for category in categories %}<option value="{{ category }}" {% if editing and recipe.category == category %}selected{% endif %}>{{ category }}</option>{% endfor %}
+                {% for category in categories %}<option value="{{ category }}" {% if has_values and recipe.category == category %}selected{% endif %}>{{ category }}</option>{% endfor %}
             </select>
         </div>
         <div class="form-check mb-3">
-            <input type="checkbox" name="in_menu" id="in_menu" class="form-check-input" {% if editing and recipe.in_menu %}checked{% endif %}>
+            <input type="checkbox" name="in_menu" id="in_menu" class="form-check-input" {% if has_values and recipe.in_menu %}checked{% endif %}>
             <label for="in_menu" class="form-check-label">In der Speisekarte</label>
         </div>
-        <div class="mb-3"><label for="menu_description" class="form-label">Speisekartenbeschreibung</label><input name="menu_description" id="menu_description" class="form-control" value="{{ recipe.menu_description if editing else '' }}"></div>
-        <div class="mb-3"><label for="allergens" class="form-label">Allergene</label><input name="allergens" id="allergens" class="form-control" value="{{ recipe.allergens if editing else '' }}" placeholder="z. B. Gluten, Laktose, Nüsse"></div>
+        <div class="mb-3"><label for="menu_description" class="form-label">Speisekartenbeschreibung</label><input name="menu_description" id="menu_description" class="form-control" value="{{ recipe.menu_description if has_values else '' }}"></div>
+        <div class="mb-3"><label for="allergens" class="form-label">Allergene</label><input name="allergens" id="allergens" class="form-control" value="{{ recipe.allergens if has_values else '' }}" placeholder="z. B. Gluten, Laktose, Nüsse"></div>
         <div class="row">
-            <div class="col-md-6 mb-3"><label for="approximate_cost" class="form-label">Ca. Einkaufspreis (€)</label><input type="number" name="approximate_cost" id="approximate_cost" step="0.01" class="form-control" value="{{ recipe.approximate_cost if editing and recipe.approximate_cost is not none else '' }}"></div>
-            <div class="col-md-6 mb-3"><label for="selling_price" class="form-label">Verkaufspreis (€)</label><input type="number" name="selling_price" id="selling_price" step="0.01" class="form-control" value="{{ recipe.selling_price if editing and recipe.selling_price is not none else '' }}"></div>
+            <div class="col-md-6 mb-3"><label for="approximate_cost" class="form-label">Ca. Einkaufspreis (€)</label><input type="number" name="approximate_cost" id="approximate_cost" step="0.01" class="form-control" value="{{ recipe.approximate_cost if has_values and recipe.approximate_cost is not none else '' }}"></div>
+            <div class="col-md-6 mb-3"><label for="selling_price" class="form-label">Verkaufspreis (€)</label><input type="number" name="selling_price" id="selling_price" step="0.01" class="form-control" value="{{ recipe.selling_price if has_values and recipe.selling_price is not none else '' }}"></div>
         </div>
         <div class="mb-3">
             <label class="form-label">Zubereitungsschritte</label>
             <input type="hidden" name="instructions" id="hidden-instructions">
-            <div id="editor-container">{% if editing and recipe.instructions %}{{ recipe.instructions|safe }}{% endif %}</div>
+            <div id="editor-container">{% if has_values and recipe.instructions %}{{ recipe.instructions|safe }}{% endif %}</div>
         </div>
-        <div class="mb-3"><label for="notes" class="form-label">Notizen/Anrichtehinweise</label><textarea name="notes" id="notes" class="form-control" rows="3">{{ recipe.notes if editing and recipe.notes else '' }}</textarea></div>
+        <div class="mb-3"><label for="notes" class="form-label">Notizen/Anrichtehinweise</label><textarea name="notes" id="notes" class="form-control" rows="3">{{ recipe.notes if has_values and recipe.notes else '' }}</textarea></div>
 
         <h2>Zutaten (für eine Portion)</h2>
         <div id="ingredients-wrapper" data-count="{{ [ingredients|length, 1]|max }}">
@@ -53,7 +56,7 @@
                 <div class="row g-2 ingredient-set mb-2">
                     <div class="col-auto handle"><i class="bi bi-grip-vertical"></i></div>
                     <div class="col"><input type="number" step="0.01" name="quantity_{{ loop.index }}" placeholder="Menge" class="form-control quantity-input" value="{{ ingredient.quantity }}"></div>
-                    <div class="col"><select name="unit_{{ loop.index }}" class="form-control unit-dropdown">{% for unit in ["g", "ml", "Stück", "nach Geschmack"] %}<option value="{{ unit }}" {% if ingredient.unit == unit %}selected{% endif %}>{{ unit }}</option>{% endfor %}</select></div>
+                    <div class="col"><input name="unit_{{ loop.index }}" list="unit-options" class="form-control unit-dropdown" value="{{ ingredient.unit }}" placeholder="Einheit"></div>
                     <div class="col"><input name="ingredient_name_{{ loop.index }}" placeholder="Zutat" class="form-control" value="{{ ingredient.ingredient_name }}"></div>
                     <div class="col-auto"><button type="button" class="btn btn-danger btn-sm remove-ingredient">×</button></div>
                 </div>
@@ -62,12 +65,13 @@
                 <div class="row g-2 ingredient-set mb-2">
                     <div class="col-auto handle"><i class="bi bi-grip-vertical"></i></div>
                     <div class="col"><input type="number" step="0.01" name="quantity_1" placeholder="Menge" class="form-control quantity-input"></div>
-                    <div class="col"><select name="unit_1" class="form-control unit-dropdown"><option>g</option><option>ml</option><option>Stück</option><option>nach Geschmack</option></select></div>
+                    <div class="col"><input name="unit_1" list="unit-options" class="form-control unit-dropdown" value="g" placeholder="Einheit"></div>
                     <div class="col"><input name="ingredient_name_1" placeholder="Zutat" class="form-control"></div>
                     <div class="col-auto"><button type="button" class="btn btn-danger btn-sm remove-ingredient">×</button></div>
                 </div>
             {% endif %}
         </div>
+        <datalist id="unit-options"><option value="g"><option value="kg"><option value="ml"><option value="l"><option value="TL"><option value="EL"><option value="Stück"><option value="Prise"><option value="Bund"><option value="Zehe"><option value="Scheibe"><option value="Dose"><option value="Päckchen"><option value="nach Geschmack"></datalist>
         <button type="button" class="btn btn-secondary mt-2" id="add-ingredient-btn">Weitere Zutat</button>
         <div class="mt-4"><button type="submit" class="btn btn-success">Speichern</button></div>
     </form>

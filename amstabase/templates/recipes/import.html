@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% set title = "Rezept mit LLM importieren – AmstaBase" %}
+{% block content %}
+<div class="recipe-detail-container">
+    <h1>Rezept mit LLM importieren</h1>
+    <p>Füge entweder eine öffentliche Rezept-URL oder den vollständigen Rezepttext ein. Das Ergebnis wird anschließend im normalen Rezeptformular zur Prüfung angezeigt und noch nicht automatisch gespeichert.</p>
+    <div class="alert alert-warning">Der geladene beziehungsweise eingefügte Rezepttext wird an den vom Administrator konfigurierten LLM-Endpunkt übertragen.</div>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-4">
+            <label for="source_url" class="form-label">Öffentliche Rezept-URL</label>
+            <input type="url" name="source_url" id="source_url" class="form-control" value="{{ source_url }}" placeholder="https://example.com/rezept">
+        </div>
+        <div class="text-center mb-4"><strong>oder</strong></div>
+        <div class="mb-4">
+            <label for="source_text" class="form-label">Rezept als Text</label>
+            <textarea name="source_text" id="source_text" class="form-control" rows="14" placeholder="Titel, Zutaten und Zubereitung …">{{ source_text }}</textarea>
+        </div>
+        <button class="btn btn-primary">Rezept analysieren</button>
+        <a href="{{ url_for('recipes.new_recipe') }}" class="btn btn-secondary">Manuell erfassen</a>
+    </form>
+</div>
+{% endblock %}

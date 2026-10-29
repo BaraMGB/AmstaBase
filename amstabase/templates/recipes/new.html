@@ -1,4 +1,4 @@
 {% extends "base.html" %}
-{% set title = "Neues Rezept – AmstaBase" %}
+{% set title = ("Importiertes Rezept prüfen" if form_mode == "import" else "Neues Rezept") ~ " – AmstaBase" %}
 {% block content %}{% include "recipes/_form.html" %}{% endblock %}
 {% block scripts %}<script src="{{ url_for('static', filename='recipe-form.js') }}"></script>{% endblock %}

@@ -19,6 +19,7 @@ from flask import (
 from flask_login import current_user, login_required
 
 from .db import get_categories, get_db
+from .llm import RecipeImportError, fetch_recipe_source, structure_recipe
 from .permissions import permission_required
 from .services import (
     allowed_image,
@@ -217,7 +218,47 @@ def new_recipe():
             return redirect(url_for("recipes.show_recipe", recipe_id=recipe_id))
 
     return render_template(
-        "recipes/new.html", categories=get_categories(), recipe=None, ingredients=[], photos=[]
+        "recipes/new.html",
+        categories=get_categories(),
+        recipe=None,
+        ingredients=[],
+        photos=[],
+        form_mode="new",
+    )
+
+
+@bp.route("/import_recipe", methods=("GET", "POST"))
+@permission_required("add")
+def import_recipe():
+    source_url = request.form.get("source_url", "").strip()
+    source_text = request.form.get("source_text", "").strip()
+
+    if request.method == "POST":
+        if bool(source_url) == bool(source_text):
+            flash("Bitte entweder eine URL oder einen Textblock angeben.", "danger")
+        else:
+            try:
+                source = fetch_recipe_source(source_url) if source_url else source_text
+                recipe, ingredients = structure_recipe(source)
+            except RecipeImportError as error:
+                current_app.logger.warning("Recipe import failed: %s", error)
+                flash(str(error), "danger")
+            else:
+                flash(
+                    "Rezept wurde strukturiert. Bitte alle Angaben vor dem Speichern prüfen.",
+                    "success",
+                )
+                return render_template(
+                    "recipes/new.html",
+                    categories=get_categories(),
+                    recipe=recipe,
+                    ingredients=ingredients,
+                    photos=[],
+                    form_mode="import",
+                )
+
+    return render_template(
+        "recipes/import.html", source_url=source_url, source_text=source_text
     )
 
 
@@ -293,6 +334,7 @@ def edit_recipe(recipe_id: int):
         recipe=recipe,
         ingredients=ingredients,
         photos=photos,
+        form_mode="edit",
     )
 
 

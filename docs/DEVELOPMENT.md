@@ -27,11 +27,14 @@ app = create_app({"TESTING": True, "DATABASE": "/tmp/amstabase-test.sqlite"})
 | POST | `/logout` | angemeldet | Sitzung beenden |
 | GET | `/` | angemeldet | Rezeptsuche und Übersicht |
 | GET/POST | `/new_recipe` | Admin/Editor | Rezept anlegen |
+| GET/POST | `/import_recipe` | Admin/Editor | Rezept per URL oder Text strukturieren |
 | GET | `/recipe/<id>` | angemeldet | Rezeptdetails |
 | GET/POST | `/edit_recipe/<id>` | Admin/Editor | Rezept bearbeiten |
 | POST | `/delete_recipe/<id>` | Admin/Editor | Rezept löschen |
 | GET | `/menu` | öffentlich | veröffentlichte Speisekarte |
 | GET/POST | `/admin/` | Admin | Administration |
+| POST | `/admin/llm-settings` | Admin | LLM-Endpunkt und Modell speichern |
+| POST | `/admin/llm-api-key` | Admin | API-Key als geschützte Serverdatei setzen/löschen |
 
 ## Testaufbau
 
@@ -43,6 +46,8 @@ Testgruppen:
 - `test_permissions.py`: anonyme Zugriffe und Rollenmatrix
 - `test_recipes.py`: Erstellen, HTML-Bereinigung, Bearbeiten, Löschen und Uploads
 - `test_menu.py`: Filterung der öffentlichen Speisekarte
+- `test_import.py`: Import-Workflow und Formularübergabe
+- `test_llm.py`: LLM-Protokoll, Normalisierung und URL-Schutz
 - `test_services.py`: isolierte Geschäftslogik
 
 Ausführung:
@@ -60,6 +65,8 @@ ruff check .
 - Rechte nie nur im Template verstecken; jede schreibende View benötigt einen Decorator.
 - Vom Benutzer geliefertes HTML vor Speicherung bereinigen.
 - Dateisystempfade aus `current_app.config` lesen, nicht hart codieren.
+- Externe HTTP-Aufrufe in Tests immer mocken; Tests dürfen keine echten LLM-Kosten verursachen.
+- POST-Formulare müssen ein `csrf_token` enthalten; CSRF ist nur in isolierten Tests deaktiviert.
 - Änderungen an Routen durch HTTP-Tests absichern.
 
 ## Datenbankänderungen

@@ -28,6 +28,7 @@
                 {% endif %}
                 <span class="me-3">Angemeldet als <strong>{{ current_user.username }}</strong></span>
                 <form action="{{ url_for('auth.logout') }}" method="post" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
                 </form>
             {% else %}

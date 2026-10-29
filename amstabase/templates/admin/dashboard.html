@@ -13,6 +13,7 @@
                     <td>{{ user.id }}</td><td>{{ user.username }}</td><td>{{ user.role }}</td>
                     <td>
                         <form action="{{ url_for('admin.edit_user_role', user_id=user.id) }}" method="post" class="d-inline-flex gap-2">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <select name="role" class="form-select form-select-sm" {% if user.id == current_user.id %}disabled{% endif %}>
                                 {% for role in roles %}<option value="{{ role }}" {% if user.role == role %}selected{% endif %}>{{ role }}</option>{% endfor %}
                             </select>
@@ -20,6 +21,7 @@
                         </form>
                         {% if user.id != current_user.id %}
                             <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="post" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button class="btn btn-danger btn-sm" onclick="return confirm('Benutzer wirklich löschen?')">Löschen</button>
                             </form>
                         {% endif %}
@@ -32,14 +34,45 @@
 
     <h2>Kategorien</h2>
     <form method="post" class="mb-5">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <label for="categories" class="form-label">Kommagetrennte Kategorien</label>
         <textarea name="categories" id="categories" class="form-control" rows="3">{{ categories_string }}</textarea>
         <button class="btn btn-success mt-3">Kategorien speichern</button>
     </form>
 
+    <h2>LLM-Rezeptimport</h2>
+    <form action="{{ url_for('admin.update_llm_settings') }}" method="post" class="mb-5">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+            <label for="llm_endpoint" class="form-label">OpenAI-kompatibler Chat-Completions-Endpunkt</label>
+            <input type="url" name="llm_endpoint" id="llm_endpoint" class="form-control" value="{{ llm_endpoint }}" required>
+            <div class="form-text">Beispiel: https://api.openai.com/v1/chat/completions</div>
+        </div>
+        <div class="mb-3">
+            <label for="llm_model" class="form-label">Modell</label>
+            <input name="llm_model" id="llm_model" class="form-control" value="{{ llm_model }}" required>
+            <div class="form-text">Beispiel: gpt-4o-mini oder der Modellname eines lokalen OpenAI-kompatiblen Servers.</div>
+        </div>
+        <button class="btn btn-success">LLM-Einstellungen speichern</button>
+    </form>
+
+    <h3>API-Key</h3>
+    <p>Status: <strong>{% if llm_api_key_source == "admin" %}über Admin-Oberfläche konfiguriert{% elif llm_api_key_source == "environment" %}über OPENAI_API_KEY konfiguriert{% else %}nicht konfiguriert{% endif %}</strong></p>
+    <form action="{{ url_for('admin.update_llm_api_key') }}" method="post" class="mb-5">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+            <label for="llm_api_key" class="form-label">Neuen API-Key eintragen</label>
+            <input type="password" name="llm_api_key" id="llm_api_key" class="form-control" autocomplete="new-password" placeholder="Der vorhandene Key wird niemals angezeigt">
+            <div class="form-text">Der Key wird außerhalb der Datenbank unter instance/secrets/ mit restriktiven Dateirechten gespeichert.</div>
+        </div>
+        <button name="action" value="save" class="btn btn-success">API-Key speichern oder ersetzen</button>
+        {% if llm_api_key_source == "admin" %}<button name="action" value="delete" class="btn btn-danger" formnovalidate onclick="return confirm('API-Key wirklich löschen?')">Gespeicherten Key löschen</button>{% endif %}
+    </form>
+
     <h2>Registrierung</h2>
     <p>Aktueller Status: <strong>{{ "aktiv" if registration_enabled else "deaktiviert" }}</strong></p>
     <form action="{{ url_for('admin.toggle_registration') }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button class="btn btn-primary">Registrierung {{ "deaktivieren" if registration_enabled else "aktivieren" }}</button>
     </form>
 </div>

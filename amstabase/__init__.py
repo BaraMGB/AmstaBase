@@ -13,7 +13,7 @@ load_dotenv()
 
 from . import admin, auth, db, menu, recipes  # noqa: E402
 from .config import Config  # noqa: E402
-from .extensions import login_manager  # noqa: E402
+from .extensions import csrf, login_manager  # noqa: E402
 from .permissions import has_permission  # noqa: E402
 
 
@@ -25,6 +25,10 @@ def create_app(test_config: dict | None = None) -> Flask:
     app.config.from_mapping(
         DATABASE=os.getenv("DATABASE_PATH", str(Path(app.instance_path) / "amstabase.sqlite")),
         UPLOAD_FOLDER=os.getenv("UPLOAD_FOLDER", str(Path(app.instance_path) / "uploads")),
+        OPENAI_API_KEY_FILE=os.getenv(
+            "OPENAI_API_KEY_FILE",
+            str(Path(app.instance_path) / "secrets" / "openai_api_key"),
+        ),
     )
     if test_config:
         app.config.update(test_config)
@@ -37,6 +41,7 @@ def create_app(test_config: dict | None = None) -> Flask:
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
     )
 
+    csrf.init_app(app)
     login_manager.init_app(app)
     db.init_app(app)
     app.register_blueprint(auth.bp)
