@@ -13,7 +13,7 @@
     </div>
 
     <h2>Zutaten</h2>
-    <div class="mb-3"><label for="portions">Portionen:</label> <input type="number" id="portions" value="1" min="0.1" step="0.1" class="form-control d-inline-block" style="width:100px"></div>
+    <div class="mb-3"><label for="portions">Portionen:</label> <input type="number" id="portions" value="1" min="1" step="1" class="form-control d-inline-block" style="width:100px"></div>
     <table class="table table-bordered" id="ingredients-table"><thead><tr><th>Menge</th><th>Einheit</th><th>Zutat</th></tr></thead><tbody>
     {% for ingredient in ingredients %}<tr><td class="quantity-cell" data-base="{{ ingredient.quantity or 0 }}">{{ ingredient.quantity }}</td><td>{{ ingredient.unit }}</td><td>{% if ingredient.linked_recipe_id %}<a href="{{ url_for('recipes.show_recipe', recipe_id=ingredient.linked_recipe_id) }}">{{ ingredient.name }}</a>{% else %}{{ ingredient.name }}{% endif %}</td></tr>{% endfor %}
     </tbody></table>

@@ -38,6 +38,7 @@ def test_admin_can_create_view_edit_and_delete_recipe(app, client, auth):
     detail_text = detail.get_data(as_text=True)
     assert detail.status_code == 200
     assert "Kartoffelsuppe" in detail_text
+    assert 'id="portions" value="1" min="1" step="1"' in detail_text
     assert detail_text.index("Zubereitung") < detail_text.index("Allergene")
     assert detail_text.index("Allergene") < detail_text.index("Anmerkungen")
 
