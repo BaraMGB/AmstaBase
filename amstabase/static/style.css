@@ -1,8 +1,8 @@
 /* Grundlegende Styles */
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #646669; /* Heller Hintergrund */
-    color: #343a40; /* Dunkler Text */
+    background-color: #646669;
+    color: #f8f9fa;
     margin: 0;
     padding: 0;
 }
@@ -14,11 +14,11 @@ body {
 }
 
 h1, h2, h3 {
-    color: #343a40; /* Dunkelgrau */
+    color: #f8f9fa;
 }
 
 a {
-    color: #007bff;
+    color: #dbeafe;
     text-decoration: none;
 }
 
@@ -35,26 +35,39 @@ a:hover {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
 }
 
-.navbar .navbar-brand, 
-.navbar .nav-link, 
-.navbar .btn {
-    color: white !important; /* Alle Links und Buttons weiß */
+.navbar .navbar-brand,
+.navbar .nav-link {
+    color: #ffffff !important;
 }
 
-.navbar .navbar-brand:hover, 
-.navbar .nav-link:hover, 
-.navbar .btn:hover {
-    color: #ffc107 !important; /* Gelber Hover-Effekt */
+.navbar .navbar-brand:hover,
+.navbar .nav-link:hover {
+    color: #ffc107 !important;
 }
 
-.navbar .btn-primary {
-    background-color: #ffc107; /* Gelbe Farbe für Buttons */
-    border: none;
-    color: black; /* Schwarzer Text */
+.navbar .btn-primary,
+.navbar .btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529 !important;
 }
 
-.navbar .btn-primary:hover {
-    background-color: #e0a800; /* Etwas dunkleres Gelb beim Hover */
+.navbar .btn-primary:hover,
+.navbar .btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #212529 !important;
+}
+
+.navbar .btn-outline-danger {
+    border-color: #f8d7da;
+    color: #ffffff !important;
+}
+
+.navbar .btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #ffffff !important;
 }
 
 
@@ -111,10 +124,26 @@ a:hover {
     max-width: 1000px;
     margin: 20px auto;
     background-color: #ffffff;
+    color: #343a40;
     border: 1px solid #dee2e6;
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-detail-container h1,
+.recipe-detail-container h2,
+.recipe-detail-container h3,
+.card h1,
+.card h2,
+.card h3 {
+    color: #343a40;
+}
+
+.recipe-detail-container a,
+.card a,
+.table a {
+    color: #0056b3;
 }
 
 .recipe-title {
@@ -210,6 +239,7 @@ a:hover {
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     background-color: white;
+    color: #343a40;
     transition: all 0.3s ease-in-out;
 }
 
@@ -254,6 +284,31 @@ a:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Verstärkt den Schatten beim Hover */
     cursor: pointer; /* Ändert den Cursor zu einer Hand */
 }
+
+.recipe-result.fuzzy-active .card {
+    outline: 4px solid #ffc107;
+    outline-offset: 2px;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 14px rgba(0, 0, 0, 0.25);
+}
+
+#recipe-search-status {
+    min-height: 1.25rem;
+    font-weight: 500;
+}
+
+.form-text,
+.text-muted {
+    color: #f8f9fa !important;
+}
+
+.recipe-detail-container .form-text,
+.recipe-detail-container .text-muted,
+.card .form-text,
+.card .text-muted {
+    color: #495057 !important;
+}
+
 /* Tabelle für Zutaten */
 .table {
     margin-top: 15px;

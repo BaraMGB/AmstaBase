@@ -20,7 +20,7 @@ SQLite
 
 - `auth.py`: Benutzer laden, Passwort-Hashing, Registrierung, Login und Logout.
 - `admin.py`: Rollenverwaltung, LLM-Konfiguration und Registrierungsschalter.
-- `recipes.py`: Suche, Detailansichten, Erstellen, Bearbeiten, Löschen und Fotoverwaltung.
+- `recipes.py`: Datenbereitstellung für die clientseitige Fuzzy-Suche, Detailansichten, Erstellen, Bearbeiten, Löschen und Fotoverwaltung.
 - `llm.py`: sicherheitsbegrenzter URL-Abruf, LLM-Anfrage, JSON-Validierung und Normalisierung.
 - `db.py`: eine SQLite-Verbindung pro Flask-Kontext, Schemaaufbau, Einstellungen.
 - `permissions.py`: zentrale Rollenmatrix und Decorators für Autorisierung.
@@ -28,6 +28,10 @@ SQLite
 - `extensions.py`: gemeinsam genutzte Flask-Erweiterungen ohne Bindung an eine konkrete App.
 
 Blueprints kapseln die Fachbereiche. Externe URL-Pfade bleiben bewusst einfach (`/`, `/login`, `/recipe/<id>`), während interne Endpoints eindeutig benannt sind, zum Beispiel `recipes.show_recipe`.
+
+## Rezeptsuche
+
+Die Übersichtsseite lädt für angemeldete Benutzer Rezeptnamen, Zutaten und Vorschaubilder in einem Request. `recipe-search.js` normalisiert Umlaute und Groß-/Kleinschreibung, bewertet Teiltreffer, Editierabstand und Zeichenfolgen und sortiert die Karten direkt im Browser. Dadurch entstehen beim Tippen keine weiteren Serveranfragen. Tastaturnavigation und ARIA-Statusmeldungen ergänzen die mobile Bedienung.
 
 ## Request-Lebenszyklus
 

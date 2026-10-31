@@ -82,6 +82,24 @@ def test_recipe_creation_options_and_manual_field_order(client, auth):
     assert form_text.index("Notizen/Anrichtehinweise") < form_text.index("Speichern")
 
 
+def test_recipe_index_contains_client_side_fuzzy_search_data(client, auth):
+    auth.register()
+    auth.login()
+    client.post("/new_recipe", data=recipe_data("Kartoffelsuppe"))
+    second_recipe = recipe_data("Tomatensalat")
+    second_recipe["ingredient_name_1"] = "Tomaten"
+    client.post("/new_recipe", data=second_recipe)
+
+    text = client.get("/?search=Kartoflsupe").get_data(as_text=True)
+    assert 'id="recipe-search"' in text
+    assert 'value="Kartoflsupe"' in text
+    assert 'data-recipe-name="Kartoffelsuppe"' in text
+    assert 'data-recipe-ingredients="Kartoffeln"' in text
+    assert 'data-recipe-name="Tomatensalat"' in text
+    assert "recipe-search.js" in text
+    assert "Mit ↑ und ↓ auswählen" in text
+
+
 def test_photo_upload_uses_random_safe_filename(app, client, auth):
     auth.register()
     auth.login()

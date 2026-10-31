@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 {% set title = "Rezepte – AmstaBase" %}
 {% block content %}
-<form method="get" action="{{ url_for('recipes.index') }}" class="mb-4">
+<form id="recipe-search-form" class="mb-3" role="search" autocomplete="off">
+    <label for="recipe-search" class="form-label">Rezepte durchsuchen</label>
     <div class="input-group">
-        <input type="search" name="search" class="form-control" placeholder="Rezeptname …" value="{{ search }}">
-        <button class="btn btn-primary">Suchen</button>
+        <input type="search" id="recipe-search" name="search" class="form-control" placeholder="Name oder Zutat …" value="{{ search }}" aria-controls="recipe-results" aria-describedby="recipe-search-help recipe-search-status">
+        <button type="button" id="recipe-search-clear" class="btn btn-secondary" aria-label="Suche leeren" hidden>Leeren</button>
     </div>
+    <div id="recipe-search-help" class="form-text">Die Suche toleriert Tippfehler. Mit ↑ und ↓ auswählen, mit Enter öffnen und mit Escape leeren.</div>
+    <div id="recipe-search-status" class="form-text" aria-live="polite"></div>
 </form>
 
 {% if has_permission("add") %}
@@ -17,9 +20,9 @@
 {% endif %}
 
 {% if recipes %}
-<div class="row">
+<div id="recipe-results" class="row" aria-label="Suchergebnisse">
     {% for recipe in recipes %}
-    <div class="col-md-4">
+    <div class="col-md-4 recipe-result" data-recipe-name="{{ recipe.name }}" data-recipe-ingredients="{{ recipe.ingredients }}">
         <a href="{{ url_for('recipes.show_recipe', recipe_id=recipe.id) }}" class="recipe-card-link">
             <div class="card mb-4">
                 {% if recipe.photo %}<img src="{{ url_for('recipes.uploaded_file', filename=recipe.photo) }}" class="card-img-top" alt="{{ recipe.name }}">{% endif %}
@@ -29,7 +32,9 @@
     </div>
     {% endfor %}
 </div>
+<p id="recipe-search-empty" class="text-muted d-none">Keine passenden Rezepte gefunden.</p>
 {% else %}
-<p class="text-muted">Keine Rezepte gefunden.</p>
+<p class="text-muted">Noch keine Rezepte vorhanden.</p>
 {% endif %}
 {% endblock %}
+{% block scripts %}{% if recipes %}<script src="{{ url_for('static', filename='recipe-search.js') }}"></script>{% endif %}{% endblock %}

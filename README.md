@@ -5,6 +5,7 @@ AmstaBase ist eine Flask-Anwendung zur internen Verwaltung von Rezepten, Zutaten
 ## Funktionen
 
 - Rezeptverwaltung mit Zutaten, Rich-Text-Zubereitung und mehreren Fotos
+- Schnelle fehlertolerante Rezeptsuche nach Namen und Zutaten
 - KI-gestützter Rezeptimport aus öffentlicher URL oder Textblock
 - Rollenbasierte Rechte für Admin, Editor, Viewer und Service
 - Persistente Einstellungen für Registrierung und LLM-Anbindung
@@ -75,6 +76,10 @@ pyproject.toml           # Paket-, Abhängigkeits- und Toolkonfiguration
 | Editor | ✓ | ✓ | ✓ | – |
 | Viewer | ✓ | – | – | – |
 | Service | ✓, reduzierte Detailansicht | – | – | – |
+
+## Schnellsuche
+
+Die Rezeptübersicht filtert und sortiert alle Rezepte unmittelbar beim Tippen. Die Suche berücksichtigt Namen und Zutaten, toleriert Tippfehler und lässt sich mit `↑`, `↓`, `Enter` und `Escape` bedienen. Auf Geräten im selben lokalen Netzwerk ist die Anwendung über die LAN-Adresse des Servers erreichbar.
 
 ## KI-Rezeptimport
 

@@ -92,13 +92,14 @@ def index():
     recipes = get_db().execute(
         """
         SELECT r.id, r.name,
+               COALESCE(GROUP_CONCAT(i.ingredient_name, ' '), '') AS ingredients,
                (SELECT filename FROM photos
                 WHERE photos.recipe_id = r.id ORDER BY id LIMIT 1) AS photo
         FROM recipes r
-        WHERE r.name LIKE ?
+        LEFT JOIN ingredients i ON i.recipe_id = r.id
+        GROUP BY r.id, r.name
         ORDER BY r.name COLLATE NOCASE
-        """,
-        (f"%{search_query}%",),
+        """
     ).fetchall()
     return render_template("recipes/index.html", recipes=recipes, search=search_query)
 

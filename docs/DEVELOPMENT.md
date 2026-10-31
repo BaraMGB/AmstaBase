@@ -43,7 +43,7 @@ Testgruppen:
 
 - `test_auth.py`: Registrierung, Rollenvergabe, Login, persistenter Registrierungsschalter
 - `test_permissions.py`: anonyme Zugriffe und Rollenmatrix
-- `test_recipes.py`: Erstellen, HTML-Bereinigung, Bearbeiten, Löschen und Uploads
+- `test_recipes.py`: Erstellen, Fuzzy-Suchdaten, Feldreihenfolge, HTML-Bereinigung, Bearbeiten, Löschen und Uploads
 - `test_import.py`: Import-Workflow und Formularübergabe
 - `test_migrations.py`: Legacy-Schema, Backups und Datenübernahme
 - `test_llm.py`: LLM-Protokoll, Normalisierung und URL-Schutz
