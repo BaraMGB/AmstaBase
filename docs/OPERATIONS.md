@@ -21,7 +21,8 @@ Gemeinsam zu sichern sind:
 1. die Datei aus `DATABASE_PATH`,
 2. das Verzeichnis aus `UPLOAD_FOLDER`,
 3. falls verwendet die Datei aus `OPENAI_API_KEY_FILE`,
-4. die produktive `.env` beziehungsweise das Secret-Management.
+4. die produktive `.env` beziehungsweise das Secret-Management,
+5. bei einer Schema-2-Migration die automatisch erzeugten Dateien `.pre-v2.bak` und `.removed-recipe-fields.csv`.
 
 ## Konsistentes Backup
 
@@ -36,6 +37,8 @@ Alternativ kann der Dienst für das kurze Backup-Fenster angehalten werden. Wied
 
 ## Aktualisierung
 
+Vor einer Schema-Migration müssen alle laufenden App- und Worker-Prozesse gestoppt werden. Danach:
+
 ```bash
 git pull
 source .venv/bin/activate
@@ -45,7 +48,7 @@ flask --app app init-db
 # Dienst anschließend kontrolliert neu starten
 ```
 
-`init-db` ist nicht destruktiv. Trotzdem ist vor jeder Version mit Schemaänderungen ein Backup erforderlich.
+`init-db` führt erforderliche Schema-Migrationen aus. Beim erstmaligen Entfernen der alten Kategorie-, Speisekarten- und Preisfelder erzeugt die Anwendung automatisch eine vollständige `.pre-v2.bak`-Sicherung und einen `.removed-recipe-fields.csv`-Export neben der Datenbank. Trotzdem sollte vor dem Update zusätzlich ein externes Backup vorhanden sein. Nach dem Lauf müssen Logausgabe und `PRAGMA foreign_key_check` kontrolliert werden.
 
 ## Monitoring und Fehlerdiagnose
 

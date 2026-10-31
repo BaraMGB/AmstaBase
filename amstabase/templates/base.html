@@ -21,7 +21,6 @@
             Amsta<em>Base</em>
         </a>
         <div class="d-flex align-items-center">
-            <a href="{{ url_for('menu.public_menu') }}" class="btn btn-secondary me-3">Speisekarte</a>
             {% if current_user.is_authenticated %}
                 {% if current_user.role == "Admin" %}
                     <a href="{{ url_for('admin.dashboard') }}" class="btn btn-warning btn-sm me-2">Admin</a>

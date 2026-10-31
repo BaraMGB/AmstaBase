@@ -31,8 +31,7 @@ app = create_app({"TESTING": True, "DATABASE": "/tmp/amstabase-test.sqlite"})
 | GET | `/recipe/<id>` | angemeldet | Rezeptdetails |
 | GET/POST | `/edit_recipe/<id>` | Admin/Editor | Rezept bearbeiten |
 | POST | `/delete_recipe/<id>` | Admin/Editor | Rezept löschen |
-| GET | `/menu` | öffentlich | veröffentlichte Speisekarte |
-| GET/POST | `/admin/` | Admin | Administration |
+| GET | `/admin/` | Admin | Administration |
 | POST | `/admin/llm-settings` | Admin | LLM-Endpunkt und Modell speichern |
 | POST | `/admin/llm-api-key` | Admin | API-Key als geschützte Serverdatei setzen/löschen |
 
@@ -45,8 +44,8 @@ Testgruppen:
 - `test_auth.py`: Registrierung, Rollenvergabe, Login, persistenter Registrierungsschalter
 - `test_permissions.py`: anonyme Zugriffe und Rollenmatrix
 - `test_recipes.py`: Erstellen, HTML-Bereinigung, Bearbeiten, Löschen und Uploads
-- `test_menu.py`: Filterung der öffentlichen Speisekarte
 - `test_import.py`: Import-Workflow und Formularübergabe
+- `test_migrations.py`: Legacy-Schema, Backups und Datenübernahme
 - `test_llm.py`: LLM-Protokoll, Normalisierung und URL-Schutz
 - `test_services.py`: isolierte Geschäftslogik
 
@@ -54,9 +53,12 @@ Ausführung:
 
 ```bash
 pytest
+pytest --cov=amstabase --cov-report=term-missing
 pytest --cov=amstabase --cov-report=html
 ruff check .
 ```
+
+Der Coverage-Lauf berücksichtigt Branches und muss mindestens 80 Prozent erreichen. Zusätzlich sichern gezielte Regressionstests die Migration, die entfernte Speisekartenroute, die KI-/Manuell-Auswahl und die Reihenfolge der Formular- und Detailfelder ab.
 
 ## Konventionen
 
@@ -71,9 +73,9 @@ ruff check .
 
 ## Datenbankänderungen
 
-`schema.sql` ist für Erstinstallation und additive Defaults ausgelegt. Es ist kein Ersatz für Migrationen. Bei inkompatiblen Schemaänderungen:
+`schema.sql` beschreibt Neuinstallationen. Bestehende Datenbanken werden vor der Schemaerstellung durch `db.migrate_db()` aktualisiert und über `PRAGMA user_version` versioniert. Bei weiteren inkompatiblen Schemaänderungen:
 
 1. Migration mit Vorwärts- und Rückfallstrategie entwerfen.
-2. Backup mit laufendem SQLite-Backup erstellen.
+2. Automatisches SQLite-Backup und gegebenenfalls einen fachlichen Export erstellen.
 3. Migration zuerst gegen eine Kopie produktiver Daten testen.
-4. Schema-Version in `settings` oder über Alembic verwalten.
+4. IDs, Fremdschlüssel und Schema-Version durch Tests absichern.

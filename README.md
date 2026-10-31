@@ -1,16 +1,15 @@
 # AmstaBase
 
-AmstaBase ist eine Flask-Anwendung zur internen Verwaltung von Rezepten, Zutaten, Fotos, Rollen und einer öffentlichen Speisekarte.
+AmstaBase ist eine Flask-Anwendung zur internen Verwaltung von Rezepten, Zutaten, Fotos und Rollen.
 
 ## Funktionen
 
 - Rezeptverwaltung mit Zutaten, Rich-Text-Zubereitung und mehreren Fotos
-- LLM-gestützter Rezeptimport aus öffentlicher URL oder Textblock
+- KI-gestützter Rezeptimport aus öffentlicher URL oder Textblock
 - Rollenbasierte Rechte für Admin, Editor, Viewer und Service
-- Öffentliche, nach Kategorien sortierte Speisekarte
-- Persistente Einstellungen für Kategorien und Registrierung
-- SQLite-Datenbank mit automatischer, nicht destruktiver Initialisierung
-- Automatisierte Tests für Authentifizierung, Rechte, CRUD, Menü und Hilfsfunktionen
+- Persistente Einstellungen für Registrierung und LLM-Anbindung
+- SQLite-Datenbank mit automatischer Initialisierung und versionierter Migration
+- Automatisierte Tests für Authentifizierung, Rechte, CRUD, Migrationen und Hilfsfunktionen
 
 ## Schnellstart
 
@@ -55,7 +54,6 @@ amstabase/
 ├── auth.py              # Registrierung und Login
 ├── admin.py             # Benutzer und Einstellungen
 ├── recipes.py           # Rezept-CRUD und Uploads
-├── menu.py              # Öffentliche Speisekarte
 ├── llm.py               # URL-Abruf und OpenAI-kompatible Rezeptstrukturierung
 ├── db.py                # SQLite-Lebenszyklus und Settings
 ├── permissions.py       # Rollen- und Rechteprüfung
@@ -78,13 +76,15 @@ pyproject.toml           # Paket-, Abhängigkeits- und Toolkonfiguration
 | Viewer | ✓ | – | – | – |
 | Service | ✓, reduzierte Detailansicht | – | – | – |
 
-Die öffentliche Speisekarte unter `/menu` benötigt keinen Login.
-
-## LLM-Rezeptimport
+## KI-Rezeptimport
 
 Der Administrator konfiguriert unter `/admin/` den vollständigen OpenAI-kompatiblen Chat-Completions-Endpunkt, den Modellnamen und optional den API-Key. Der über die Oberfläche eingegebene Key wird nicht in der Datenbank gespeichert, sondern in `instance/secrets/openai_api_key` mit Dateirechten `0600`. Er wird niemals wieder angezeigt und kann nur ersetzt oder gelöscht werden. `OPENAI_API_KEY` dient weiterhin als optionaler Fallback. Sobald ein API-Key verwendet wird, muss der Endpunkt HTTPS nutzen; keylose lokale Endpunkte dürfen weiterhin HTTP verwenden.
 
-Die LLM-Ausgabe wird nie direkt gespeichert. Sie erscheint zunächst im normalen Rezeptformular und muss vom Benutzer fachlich geprüft werden. Der eingegebene beziehungsweise von einer URL geladene Rezepttext wird an den konfigurierten externen Endpunkt übertragen.
+Die KI-Ausgabe wird nie direkt gespeichert. Sie erscheint zunächst im normalen Rezeptformular und muss vom Benutzer fachlich geprüft werden. Der eingegebene beziehungsweise von einer URL geladene Rezepttext wird an den konfigurierten externen KI-Dienst übertragen.
+
+## Datenbankmigration
+
+Beim ersten Start mit einer älteren Datenbank werden die nicht mehr verwendeten Rezeptfelder für Kategorie, Speisekarte und Preise entfernt. Vorher erzeugt die Anwendung neben der Datenbank automatisch eine vollständige Sicherung mit der Endung `.pre-v2.bak` sowie einen CSV-Export mit der Endung `.removed-recipe-fields.csv`. Beide Dateien erhalten restriktive Dateirechte und sollten gemäß der betrieblichen Aufbewahrungsrichtlinie gesichert werden.
 
 ## Tests und Qualität
 

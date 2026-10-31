@@ -3,12 +3,7 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS recipes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    category TEXT,
-    in_menu INTEGER NOT NULL DEFAULT 0,
-    menu_description TEXT,
     allergens TEXT,
-    approximate_cost REAL,
-    selling_price REAL,
     created_by TEXT,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     edited_by TEXT,
@@ -47,9 +42,6 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 
 INSERT OR IGNORE INTO settings (key, value)
-VALUES ('categories', 'Vorspeisen,Suppen,Pasta,Hauptgerichte,Dessert,intern');
-
-INSERT OR IGNORE INTO settings (key, value)
 VALUES ('registration_enabled', 'true');
 
 INSERT OR IGNORE INTO settings (key, value)
@@ -57,3 +49,5 @@ VALUES ('llm_endpoint', 'https://api.openai.com/v1/chat/completions');
 
 INSERT OR IGNORE INTO settings (key, value)
 VALUES ('llm_model', 'gpt-4o-mini');
+
+PRAGMA user_version = 2;

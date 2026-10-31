@@ -19,25 +19,14 @@ from .permissions import ROLES, admin_required
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-@bp.route("/", methods=("GET", "POST"))
+@bp.get("/")
 @admin_required
 def dashboard():
-    if request.method == "POST":
-        categories = [
-            value.strip()
-            for value in request.form.get("categories", "").split(",")
-            if value.strip()
-        ]
-        set_setting("categories", ",".join(dict.fromkeys(categories)))
-        flash("Kategorien wurden aktualisiert.", "success")
-        return redirect(url_for("admin.dashboard"))
-
     users = get_db().execute("SELECT * FROM users ORDER BY username").fetchall()
     return render_template(
         "admin/dashboard.html",
         users=users,
         roles=ROLES,
-        categories_string=get_setting("categories", ""),
         registration_enabled=get_setting("registration_enabled", "true") == "true",
         llm_endpoint=get_setting("llm_endpoint", DEFAULT_LLM_ENDPOINT),
         llm_model=get_setting("llm_model", DEFAULT_LLM_MODEL),

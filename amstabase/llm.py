@@ -14,7 +14,7 @@ import httpx
 from bs4 import BeautifulSoup
 from flask import current_app
 
-from .db import get_categories, get_setting
+from .db import get_setting
 from .services import optional_float, sanitize_instructions
 
 DEFAULT_LLM_ENDPOINT = "https://api.openai.com/v1/chat/completions"
@@ -250,13 +250,6 @@ def _normalize_recipe(data: dict) -> tuple[dict, list[dict]]:
     if not name:
         raise RecipeImportError("Das LLM-Ergebnis enthält keinen Rezeptnamen.")
 
-    categories = get_categories()
-    category_lookup = {category.casefold(): category for category in categories}
-    suggested_category = _as_text(data.get("category"))
-    category = category_lookup.get(
-        suggested_category.casefold(), categories[0] if categories else ""
-    )
-
     instructions = data.get("instructions")
     if isinstance(instructions, list):
         items = "".join(f"<li>{escape(_as_text(item))}</li>" for item in instructions)
@@ -264,12 +257,7 @@ def _normalize_recipe(data: dict) -> tuple[dict, list[dict]]:
 
     recipe = {
         "name": name,
-        "category": category,
-        "in_menu": False,
-        "menu_description": _as_text(data.get("menu_description")),
         "allergens": _as_text(data.get("allergens")),
-        "approximate_cost": _as_number(data.get("approximate_cost")),
-        "selling_price": _as_number(data.get("selling_price")),
         "instructions": sanitize_instructions(_as_text(instructions)),
         "notes": _as_text(data.get("notes")),
     }
@@ -302,29 +290,24 @@ def structure_recipe(source_text: str) -> tuple[dict, list[dict]]:
     if not is_http_url(endpoint):
         raise RecipeImportError("Der konfigurierte LLM-Endpunkt ist ungültig.")
 
-    categories = ", ".join(get_categories())
-    system_prompt = f"""
+    system_prompt = """
 Du extrahierst Rezepte für eine Rezeptdatenbank. Antworte ausschließlich mit einem JSON-Objekt.
 Verwende dieses Schema:
-{{
+{
   "name": "string",
-  "category": "eine der Kategorien: {categories}",
-  "menu_description": "kurze Beschreibung",
   "allergens": "kommagetrennte Allergene",
-  "approximate_cost": null,
-  "selling_price": null,
   "instructions": "einfaches HTML mit p, ol, ul und li",
   "notes": "string",
   "ingredients": [
-    {{
+    {
       "quantity": 1.0,
       "unit": "g/ml/kg/l/TL/EL/Stück/Prise/nach Geschmack",
       "ingredient_name": "string"
-    }}
+    }
   ]
-}}
-Erfinde keine Preise. Fehlende Werte bleiben leer oder null. Mengen müssen numerisch sein;
-bei 'nach Geschmack' verwende 0. Bewahre alle fachlich relevanten Zubereitungsschritte.
+}
+Fehlende Werte bleiben leer oder null. Mengen müssen numerisch sein; bei 'nach Geschmack'
+verwende 0. Bewahre alle fachlich relevanten Zubereitungsschritte.
 """.strip()
     headers = {"Content-Type": "application/json"}
     api_key = get_openai_api_key()

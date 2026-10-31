@@ -11,7 +11,7 @@ from flask import Flask, session
 
 load_dotenv()
 
-from . import admin, auth, db, menu, recipes  # noqa: E402
+from . import admin, auth, db, recipes  # noqa: E402
 from .config import Config  # noqa: E402
 from .extensions import csrf, login_manager  # noqa: E402
 from .permissions import has_permission  # noqa: E402
@@ -47,7 +47,6 @@ def create_app(test_config: dict | None = None) -> Flask:
     app.register_blueprint(auth.bp)
     app.register_blueprint(admin.bp)
     app.register_blueprint(recipes.bp)
-    app.register_blueprint(menu.bp)
 
     @app.before_request
     def make_session_permanent() -> None:

@@ -4,20 +4,16 @@ from pathlib import Path
 from amstabase.db import get_db, get_setting
 
 
-def test_admin_dashboard_updates_categories(app, client, auth):
+def test_admin_dashboard_is_read_only(app, client, auth):
     auth.register()
     auth.login()
 
     response = client.get("/admin/")
+    text = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert "Registrierung" in response.get_data(as_text=True)
-
-    response = client.post(
-        "/admin/", data={"categories": " Suppen, Dessert,Suppen, "}
-    )
-    assert response.status_code == 302
-    with app.app_context():
-        assert get_setting("categories") == "Suppen,Dessert"
+    assert "Registrierung" in text
+    assert "Kategorien" not in text
+    assert client.post("/admin/").status_code == 405
 
 
 def test_admin_can_update_llm_settings(app, client, auth):

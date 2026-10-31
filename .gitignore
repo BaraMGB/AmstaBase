@@ -16,6 +16,10 @@ uploads/
 menu_card/
 *.log
 *.pid
+rezepte-mit-bildern.*
+*.pre-v2.bak
+*.removed-recipe-fields.csv
+*.migration.lock
 
 # Editors and OS
 .idea/

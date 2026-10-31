@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% set title = "Rezept mit LLM importieren – AmstaBase" %}
+{% set title = "Rezept automatisch per KI erfassen – AmstaBase" %}
 {% block content %}
 <div class="recipe-detail-container">
-    <h1>Rezept mit LLM importieren</h1>
+    <h1>Rezept automatisch per KI erfassen</h1>
     <p>Füge entweder eine öffentliche Rezept-URL oder den vollständigen Rezepttext ein. Das Ergebnis wird anschließend im normalen Rezeptformular zur Prüfung angezeigt und noch nicht automatisch gespeichert.</p>
-    <div class="alert alert-warning">Der geladene beziehungsweise eingefügte Rezepttext wird an den vom Administrator konfigurierten LLM-Endpunkt übertragen.</div>
+    <div class="alert alert-warning">Der geladene beziehungsweise eingefügte Rezepttext wird an den vom Administrator konfigurierten KI-Dienst übertragen.</div>
     <form method="post">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-4">

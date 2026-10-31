@@ -1,4 +1,4 @@
-"""Framework-light helpers shared by recipe and menu views."""
+"""Framework-light helpers shared by recipe views."""
 
 from __future__ import annotations
 

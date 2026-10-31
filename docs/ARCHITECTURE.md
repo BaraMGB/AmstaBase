@@ -19,21 +19,20 @@ SQLite
 ## Module und Verantwortlichkeiten
 
 - `auth.py`: Benutzer laden, Passwort-Hashing, Registrierung, Login und Logout.
-- `admin.py`: Rollenverwaltung, Kategorien und Registrierungsschalter.
+- `admin.py`: Rollenverwaltung, LLM-Konfiguration und Registrierungsschalter.
 - `recipes.py`: Suche, Detailansichten, Erstellen, Bearbeiten, Löschen und Fotoverwaltung.
-- `menu.py`: öffentliche, nach Kategorien geordnete Speisekarte.
 - `llm.py`: sicherheitsbegrenzter URL-Abruf, LLM-Anfrage, JSON-Validierung und Normalisierung.
 - `db.py`: eine SQLite-Verbindung pro Flask-Kontext, Schemaaufbau, Einstellungen.
 - `permissions.py`: zentrale Rollenmatrix und Decorators für Autorisierung.
 - `services.py`: Formularparser, HTML-Bereinigung und Dateitypprüfung.
 - `extensions.py`: gemeinsam genutzte Flask-Erweiterungen ohne Bindung an eine konkrete App.
 
-Blueprints kapseln die Fachbereiche. Externe URL-Pfade bleiben bewusst einfach (`/`, `/login`, `/recipe/<id>`, `/menu`), während interne Endpoints eindeutig benannt sind, zum Beispiel `recipes.show_recipe`.
+Blueprints kapseln die Fachbereiche. Externe URL-Pfade bleiben bewusst einfach (`/`, `/login`, `/recipe/<id>`), während interne Endpoints eindeutig benannt sind, zum Beispiel `recipes.show_recipe`.
 
 ## Request-Lebenszyklus
 
 1. Die Factory lädt Konfiguration und erstellt Laufzeitverzeichnisse.
-2. `db.init_db()` legt fehlende Tabellen und Defaults nicht destruktiv an.
+2. `db.init_db()` migriert bei Bedarf das Legacy-Schema und legt anschließend fehlende Tabellen und Defaults an.
 3. Flask-Login rekonstruiert den Benutzer über `auth.load_user`.
 4. `login_required` beziehungsweise `permission_required` prüft Zugriff vor der View.
 5. `db.get_db()` öffnet bei Bedarf genau eine Verbindung für den aktuellen Kontext.
@@ -50,7 +49,7 @@ Blueprints kapseln die Fachbereiche. Externe URL-Pfade bleiben bewusst einfach (
 
 ### `recipes`
 
-Enthält Stammdaten, Preise, Menüstatus, bereinigte HTML-Zubereitung sowie Erstellungs- und Änderungsmetadaten.
+Enthält Name, Allergene, bereinigte HTML-Zubereitung, Notizen sowie Erstellungs- und Änderungsmetadaten.
 
 ### `ingredients`
 
@@ -64,7 +63,6 @@ N:1-Beziehung zu `recipes`. In SQLite wird nur der zufällig erzeugte Dateiname 
 
 Ein Key-Value-Speicher für veränderliche Anwendungseinstellungen. Aktuell verwendet:
 
-- `categories`: kommagetrennte, geordnete Kategorien
 - `registration_enabled`: `true` oder `false`
 - `llm_endpoint`: vollständige URL eines OpenAI-kompatiblen Chat-Completions-Endpunkts
 - `llm_model`: an den Endpunkt übergebener Modellname
@@ -93,6 +91,8 @@ Ein Key-Value-Speicher für veränderliche Anwendungseinstellungen. Aktuell verw
 
 LLM-Ausgaben gelten grundsätzlich als nicht vertrauenswürdig. Insbesondere Mengen, Allergene und Zubereitung müssen vor dem Speichern geprüft werden.
 
-## Persistenz und Transaktionen
+## Persistenz und Migrationen
 
-Schreibende Views committen erst nach allen zugehörigen SQL-Operationen. SQLite-Fremdschlüssel werden pro Verbindung aktiviert. Das Schema nutzt `CREATE TABLE IF NOT EXISTS` und `INSERT OR IGNORE`, sodass ein App-Start keine vorhandenen Daten löscht. Schemaänderungen benötigen bei zukünftigen Versionen ein explizites Migrationskonzept, beispielsweise Alembic.
+Schreibende Views committen erst nach allen zugehörigen SQL-Operationen. SQLite-Fremdschlüssel werden pro Verbindung aktiviert. Das aktuelle Schema trägt `PRAGMA user_version = 2`.
+
+Beim Übergang vom Legacy-Schema auf Version 2 wird die Tabelle `recipes` innerhalb einer Transaktion neu aufgebaut. IDs, Rezeptdaten, Zutaten- und Fotobeziehungen bleiben erhalten. Vor der Migration entstehen automatisch eine vollständige SQLite-Sicherung (`.pre-v2.bak`) und ein CSV-Export der entfernten Kategorie-, Speisekarten- und Preisfelder (`.removed-recipe-fields.csv`). Erst danach werden die fünf Spalten und die Kategorie-Einstellung entfernt. Ein abschließender `foreign_key_check` verhindert das Commit bei beschädigten Beziehungen.

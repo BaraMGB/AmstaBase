@@ -2,17 +2,22 @@ def imported_recipe():
     return (
         {
             "name": "Tomatensuppe",
-            "category": "Suppen",
-            "in_menu": False,
-            "menu_description": "Fruchtig",
             "allergens": "",
-            "approximate_cost": "",
-            "selling_price": "",
             "instructions": "<p>Kochen</p>",
             "notes": "Prüfen",
         },
         [{"quantity": 500, "unit": "g", "ingredient_name": "Tomaten"}],
     )
+
+
+def test_import_page_uses_ki_terminology(client, auth):
+    auth.register()
+    auth.login()
+
+    text = client.get("/import_recipe").get_data(as_text=True)
+    assert "Rezept automatisch per KI erfassen" in text
+    assert "KI-Dienst" in text
+    assert "mit LLM" not in text
 
 
 def test_text_import_prefills_review_form(client, auth, monkeypatch):

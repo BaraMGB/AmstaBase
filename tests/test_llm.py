@@ -19,11 +19,7 @@ def test_structure_recipe_calls_openai_compatible_endpoint(app, monkeypatch):
                             "content": """```json
                             {
                               "name": "Tomatensuppe",
-                              "category": "Suppen",
-                              "menu_description": "Fruchtige Suppe",
                               "allergens": [],
-                              "approximate_cost": null,
-                              "selling_price": null,
                               "instructions": ["Tomaten kochen", "Pürieren"],
                               "notes": "",
                               "ingredients": [
@@ -50,7 +46,6 @@ def test_structure_recipe_calls_openai_compatible_endpoint(app, monkeypatch):
     assert captured["headers"]["Authorization"] == "Bearer secret"
     assert captured["json"]["model"] == "gpt-4o-mini"
     assert recipe["name"] == "Tomatensuppe"
-    assert recipe["category"] == "Suppen"
     assert "<ol>" in recipe["instructions"]
     assert ingredients == [
         {"quantity": 500.0, "unit": "g", "ingredient_name": "Tomaten"}

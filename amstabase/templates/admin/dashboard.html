@@ -32,14 +32,6 @@
         </table>
     </div>
 
-    <h2>Kategorien</h2>
-    <form method="post" class="mb-5">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <label for="categories" class="form-label">Kommagetrennte Kategorien</label>
-        <textarea name="categories" id="categories" class="form-control" rows="3">{{ categories_string }}</textarea>
-        <button class="btn btn-success mt-3">Kategorien speichern</button>
-    </form>
-
     <h2>LLM-Rezeptimport</h2>
     <form action="{{ url_for('admin.update_llm_settings') }}" method="post" class="mb-5">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

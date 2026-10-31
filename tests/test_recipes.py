@@ -7,12 +7,7 @@ from amstabase.db import get_db
 def recipe_data(name="Kartoffelsuppe"):
     return {
         "name": name,
-        "category": "Suppen",
-        "in_menu": "on",
-        "menu_description": "Cremige Suppe",
         "allergens": "Milch",
-        "approximate_cost": "2.50",
-        "selling_price": "8.90",
         "instructions": "<p><strong>Kochen</strong></p><script>bad()</script>",
         "notes": "Warm servieren",
         "quantity_1": "200",
@@ -40,8 +35,11 @@ def test_admin_can_create_view_edit_and_delete_recipe(app, client, auth):
         assert ingredient["display_order"] == 1
 
     detail = client.get("/recipe/1")
+    detail_text = detail.get_data(as_text=True)
     assert detail.status_code == 200
-    assert "Kartoffelsuppe" in detail.get_data(as_text=True)
+    assert "Kartoffelsuppe" in detail_text
+    assert detail_text.index("Zubereitung") < detail_text.index("Allergene")
+    assert detail_text.index("Allergene") < detail_text.index("Anmerkungen")
 
     updated = recipe_data("Kürbissuppe")
     updated["ingredient_name_1"] = "Kürbis"
@@ -62,6 +60,25 @@ def test_admin_can_create_view_edit_and_delete_recipe(app, client, auth):
     assert response.status_code == 302
     with app.app_context():
         assert get_db().execute("SELECT COUNT(*) FROM recipes").fetchone()[0] == 0
+
+
+def test_recipe_creation_options_and_manual_field_order(client, auth):
+    auth.register()
+    auth.login()
+
+    index_text = client.get("/").get_data(as_text=True)
+    assert "Rezept hinzufügen" in index_text
+    assert "Automatisch per KI" in index_text
+    assert "Manuell eingeben" in index_text
+    assert "Mit LLM" not in index_text
+
+    form_text = client.get("/new_recipe").get_data(as_text=True)
+    assert form_text.index("Zubereitungsschritte") < form_text.index(
+        "Zutaten (für eine Portion)"
+    )
+    assert form_text.index("Zutaten (für eine Portion)") < form_text.index("Allergene")
+    assert form_text.index("Allergene") < form_text.index("Notizen/Anrichtehinweise")
+    assert form_text.index("Notizen/Anrichtehinweise") < form_text.index("Speichern")
 
 
 def test_photo_upload_uses_random_safe_filename(app, client, auth):
@@ -90,8 +107,14 @@ def test_service_gets_reduced_detail_view(client, auth):
 
     text = client.get("/recipe/1").get_data(as_text=True)
     assert "Kartoffelsuppe" in text
-    assert "Einkaufspreis" not in text
+    assert "Milch" in text
     assert "Zubereitung" not in text
+    assert text.index("Zutaten") < text.index("Allergene")
+    assert text.index("Allergene") < text.index("Anmerkungen")
+
+
+def test_public_menu_route_is_removed(client):
+    assert client.get("/menu").status_code == 404
 
 
 def test_missing_recipe_returns_404(client, auth):

@@ -18,15 +18,10 @@ from flask import (
 )
 from flask_login import current_user, login_required
 
-from .db import get_categories, get_db
+from .db import get_db
 from .llm import RecipeImportError, fetch_recipe_source, structure_recipe
 from .permissions import permission_required
-from .services import (
-    allowed_image,
-    extract_ingredients,
-    optional_float,
-    sanitize_instructions,
-)
+from .services import allowed_image, extract_ingredients, sanitize_instructions
 
 bp = Blueprint("recipes", __name__)
 
@@ -62,12 +57,7 @@ def _recipe_values() -> tuple[dict, list[dict]]:
 
     values = {
         "name": name,
-        "menu_description": request.form.get("menu_description", "").strip(),
-        "category": request.form.get("category", "").strip(),
-        "in_menu": request.form.get("in_menu") == "on",
         "allergens": request.form.get("allergens", "").strip(),
-        "approximate_cost": optional_float(request.form.get("approximate_cost")),
-        "selling_price": optional_float(request.form.get("selling_price")),
         "instructions": sanitize_instructions(request.form.get("instructions")),
         "notes": request.form.get("notes", "").strip(),
     }
@@ -99,28 +89,18 @@ def _insert_ingredients(recipe_id: int, ingredients: list[dict]) -> None:
 @login_required
 def index():
     search_query = request.args.get("search", "").strip()
-    categories = get_categories()
     recipes = get_db().execute(
         """
-        SELECT r.id, r.name, r.category, r.menu_description,
-               COALESCE(CAST(r.selling_price AS REAL), 0) AS selling_price,
+        SELECT r.id, r.name,
                (SELECT filename FROM photos
                 WHERE photos.recipe_id = r.id ORDER BY id LIMIT 1) AS photo
         FROM recipes r
-        WHERE r.name LIKE ? OR r.category LIKE ?
+        WHERE r.name LIKE ?
+        ORDER BY r.name COLLATE NOCASE
         """,
-        (f"%{search_query}%", f"%{search_query}%"),
+        (f"%{search_query}%",),
     ).fetchall()
-    category_order = {category: index for index, category in enumerate(categories)}
-    sorted_recipes = sorted(
-        recipes,
-        key=lambda recipe: (
-            category_order.get(recipe["category"], len(categories)),
-            recipe["selling_price"],
-            recipe["name"].casefold(),
-        ),
-    )
-    return render_template("recipes/index.html", recipes=sorted_recipes, search=search_query)
+    return render_template("recipes/index.html", recipes=recipes, search=search_query)
 
 
 @bp.get("/uploads/<path:filename>")
@@ -148,8 +128,6 @@ def show_recipe(recipe_id: int):
         "SELECT * FROM photos WHERE recipe_id = ? ORDER BY id", (recipe_id,)
     ).fetchall()
     recipe = dict(row)
-    recipe["selling_price"] = float(recipe["selling_price"] or 0)
-    recipe["approximate_cost"] = float(recipe["approximate_cost"] or 0)
 
     if current_user.role == "Service":
         return render_template(
@@ -193,17 +171,11 @@ def new_recipe():
             cursor = database.execute(
                 """
                 INSERT INTO recipes
-                    (name, menu_description, category, in_menu, approximate_cost,
-                     selling_price, allergens, instructions, notes, created_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (name, allergens, instructions, notes, created_by)
+                VALUES (?, ?, ?, ?, ?)
                 """,
                 (
                     values["name"],
-                    values["menu_description"],
-                    values["category"],
-                    values["in_menu"],
-                    values["approximate_cost"],
-                    values["selling_price"],
                     values["allergens"],
                     values["instructions"],
                     values["notes"],
@@ -219,7 +191,6 @@ def new_recipe():
 
     return render_template(
         "recipes/new.html",
-        categories=get_categories(),
         recipe=None,
         ingredients=[],
         photos=[],
@@ -250,7 +221,6 @@ def import_recipe():
                 )
                 return render_template(
                     "recipes/new.html",
-                    categories=get_categories(),
                     recipe=recipe,
                     ingredients=ingredients,
                     photos=[],
@@ -279,19 +249,12 @@ def edit_recipe(recipe_id: int):
             database.execute(
                 """
                 UPDATE recipes
-                SET name = ?, menu_description = ?, category = ?, in_menu = ?,
-                    approximate_cost = ?, selling_price = ?, allergens = ?,
-                    instructions = ?, notes = ?, edited_by = ?,
-                    edited_time = CURRENT_TIMESTAMP
+                SET name = ?, allergens = ?, instructions = ?, notes = ?,
+                    edited_by = ?, edited_time = CURRENT_TIMESTAMP
                 WHERE id = ?
                 """,
                 (
                     values["name"],
-                    values["menu_description"],
-                    values["category"],
-                    values["in_menu"],
-                    values["approximate_cost"],
-                    values["selling_price"],
                     values["allergens"],
                     values["instructions"],
                     values["notes"],
@@ -330,7 +293,6 @@ def edit_recipe(recipe_id: int):
     ).fetchall()
     return render_template(
         "recipes/edit.html",
-        categories=get_categories(),
         recipe=recipe,
         ingredients=ingredients,
         photos=photos,
